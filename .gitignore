@@ -11,3 +11,6 @@
 .git
 .gitignore~
 # End of https://www.gitignore.io/api/visualstudiocode
+
+# Backups
+*~
