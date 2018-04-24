@@ -9,5 +9,5 @@
 !.vscode/extensions.json
 .history
 .git
-
+.gitignore~
 # End of https://www.gitignore.io/api/visualstudiocode
