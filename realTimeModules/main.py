@@ -56,7 +56,7 @@ def main():
 
     videoProbQ = Queue()
     toneProbQ = Queue()
-    toneProbQ = Queue()
+    speechProbQ = Queue()
     utteranceQ = Queue()
 
     videoAttrQ = Queue()
@@ -68,7 +68,7 @@ def main():
     videoProcess = Process(target=detectEmotionsVideo, args=(videoProbQ, videoAttrQ,os.path.join(ROOT_REALTIMEMODULES, "video", "test","videoplayback.mp4")))
     # toneProcess = Process(target=generateToneProbs, args=(toneProbQ,))
     toneProcess = Process(target=detectEmotionsTone, args=(toneProbQ, toneAttrQ, utteranceQ))
-    speechProcess = Process(target=generateSpeechProbs, args=(toneProbQ,))
+    speechProcess = Process(target=generateSpeechProbs, args=(speechProbQ,))
     audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceQ,))
 
     videoProcess.start()
