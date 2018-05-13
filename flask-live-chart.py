@@ -10,22 +10,19 @@ app = Flask(__name__)
 
 #format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs,    videoAttr         ]
 # size :  [    6                3           6       6           6             2  ]
-readFile = os.path.join(os.path.realpath(__file__), 'CombiningProbs', 'picklefile')
-
+ROOT_INTERFACE = os.path.dirname(os.path.realpath(__file__))
+readFile = os.path.join(ROOT_INTERFACE, 'picklesForInterface','pickleFile')
 @app.route('/')
 def renderHomePage():
     return render_template('index.html', data='test')
 
 @app.route('/live-data')
 def live_data():
-    '''
-    with open(readFile, 'rb') as fp:
-        receivedData = pickle.load(fp)
-        print('Received data is : ',receivedData)
-    '''
+ 
     with open(readFile, 'rb') as fp:
         pickeDump = pickle.load(fp)
     receivedData = []
+   
     #convert to single 1D array
     for array in pickeDump:
         for element in array:
