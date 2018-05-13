@@ -33,3 +33,6 @@ realTimeModules/speech/test
 
 # ignore the image container for video on the dashboard
 static/video.png
+
+# ADD THE API KEY
+realTimeModules/speech/api_key.json
