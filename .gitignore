@@ -30,3 +30,6 @@ realTimeModules/audioRecorder/test
 realTimeModules/tone/test
 realTimeModules/video/test
 realTimeModules/speech/test
+
+# ignore the image container for video on the dashboard
+static/video.png
