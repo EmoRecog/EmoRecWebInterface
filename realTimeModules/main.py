@@ -7,7 +7,7 @@ from multiprocessing import Process, Queue
 import numpy as np
 
 from speech.speech import generateSpeechProbs
-from tone.tone import generateToneProbs
+from tone.tone import generateToneProbs, detectEmotionsTone
 from video.video import detectEmotionsVideo, generateVideoProbs
 from audioRecorder.audioRecorder import startAudioRecorder
 
@@ -61,12 +61,13 @@ def main():
 
     videoAttrQ = Queue()
     toneAttrQ = Queue()
-    toneAttrQ = Queue()
+    speechAttrQ = Queue()
     # Last 2 are for future use
 
     # videoProcess = Process(target=generateVideoProbs, args=(videoProbQ,))
     videoProcess = Process(target=detectEmotionsVideo, args=(videoProbQ, videoAttrQ,os.path.join(ROOT_REALTIMEMODULES, "video", "test","videoplayback.mp4")))
-    toneProcess = Process(target=generateToneProbs, args=(toneProbQ,))
+    # toneProcess = Process(target=generateToneProbs, args=(toneProbQ,))
+    toneProcess = Process(target=detectEmotionsTone, args=(toneProbQ, toneAttrQ, utteranceQ))
     speechProcess = Process(target=generateSpeechProbs, args=(toneProbQ,))
     audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceQ,))
 
@@ -114,6 +115,7 @@ def main():
             toneProbs = toneProbQ.get(block=False)
             toneProbUpdate = True
             toneWeight = 1.0
+            toneAttrs = toneAttrQ.get()
         except queue.Empty:
             toneProbUpdate = False
             toneWeight -= 0.2
@@ -133,6 +135,8 @@ def main():
         print(videoProbs)
         
         print("Tone Probs : UPDATE : " + str(toneProbUpdate))
+        if(toneProbUpdate):
+            print("Utterance no : " + str(toneAttrs[0]) + ", Emotion Label : " + str(toneAttrs[1]))
         print(toneProbs)
         
         print("Speech Probs : UPDATE : " + str(speechProbUpdate))

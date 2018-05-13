@@ -26,4 +26,7 @@ picklesForInterface/
 .directory
 
 # ignore test folders
-*/test
+realTimeModules/audioRecorder/test
+realTimeModules/tone/test
+realTimeModules/video/test
+realTimeModules/speech/test
