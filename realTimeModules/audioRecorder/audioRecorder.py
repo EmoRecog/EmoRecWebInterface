@@ -101,7 +101,7 @@ def test():
     stream.close()
     p.terminate()
 
-def startAudioRecorder(utteranceQ):
+def startAudioRecorder(utteranceToneQ,utteranceSpeechQ):
     # setup 
     DEVICE_IP_HW = "Camera" # this usually is hw:2,0
     FORMAT = pyaudio.paInt16
@@ -140,7 +140,8 @@ def startAudioRecorder(utteranceQ):
             wavFile.close()
             # print("saved " + os.path.join(OUTPUT_DIR, "mic_" + str(utteranceCOunt) + ".wav"))
             
-            utteranceQ.put(utteranceData)
+            utteranceToneQ.put(utteranceData)
+            utteranceSpeechQ.put(utteranceData)
             # print("AUDIO RECORDER -> Utterance " + str(utteranceCount) + " recorded")
             # print("-----------------------------------------------")
 
