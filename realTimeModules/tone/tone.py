@@ -85,10 +85,10 @@ def detectEmotionsTone(toneProbQ, toneAttrQ, utteranceQ):
                 emotionLabelNum = np.argmax(avgSegmentProbabilities)
 
                 # generate toneProbsQ here
-                # TODO : test, remove this later
-                print("----------------------------")
-                print(avgSegmentProbabilities)
-                print("----------------------------")
+                # # TODO : test, remove this later
+                # print("----------------------------")
+                # print(avgSegmentProbabilities)
+                # print("----------------------------")
                 toneAttrs = [utteranceCount, emotions[emotionLabelNum]]
                 toneAttrQ.put(toneAttrs)
                 toneProbQ.put(avgSegmentProbabilities)

@@ -122,7 +122,9 @@ def startAudioRecorder(utteranceQ):
                         frames_per_buffer=CHUNK)
 
         THRESHOLD = getThreshold(stream, RATE, CHUNK, BASELINE_SECONDS) +3000 # just to be safe
+        print("________________________________________")
         print("RECORDER -> Threshold : " + str(THRESHOLD))
+        print("________________________________________")
 
         utteranceCount = 0
         while(True):
