@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Multimodal emotion recognition</title>
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+
+  <style>
+
+      video {
+    width: 100%;
+    height: 100%;
+  
+    z-index: 99999;
+    object-fit: cover;
+  }
+
+  </style>
+
+  
+</head>
+
+<body>
+  <div class="navbar navbar-inverse navbar-static-top" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="/">Multimodal emotion recognition</a>
+      </div>
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav">
+          <li class="active">
+            <a href="#">Dashboard</a>
+          </li>
+          <li>
+            <a href="#">Video Module</a>
+          </li>
+          <li>
+            <a href="#">Audio Module</a>
+          </li>
+          <li>
+            <a href="#">Text Module</a>
+          </li>
+        </ul>
+                  
+      </div>
+      <!-- /.navbar-collapse -->
+    </div>
+  </div>
+
+ 
+
+  <div class="container-fluid">
+  
+    <!-- <div class = "row">
+      <nav class="col-xs-3">
+          <ul class="nav nav-pills nav-stacked" data-spy="affix" data-offset-top="205" id = "sidebar">
+            <li class="active"><a href="#section1">Section 1</a></li>
+            <li><a href="#section2">Section 2</a></li>
+            <li><a href="#section3">Section 3</a></li>
+          </ul>
+      </nav>
+    </div> -->
+    <!-- <div class="row">
+        <div class="col-xs-4" >
+          
+                <video autoplay="true" id="videoElement"></video>
+          
+        </div> 
+    </div> -->
+    <div class="row">
+      <h1 class="bg-success">Combined probabilities <small>Combined output of 3 modules</small></h1>
+    </div>
+    <div class="row">
+      <div class="col-xs-4">
+        <div class="container-fluid" id="combinedLine"></div>
+      </div>
+      <div class="col-xs-4">
+          <div class="container-fluid" id="combinedSpider"></div>
+      </div>
+      <div class="col-xs-4">
+          <div class="container-fluid" id="weights"></div>
+      </div>
+    </div>
+
+    <div class="row" id="videoDivRow">
+          <div class="col-xs-6">
+            <img name="picture" src="/static/video.png">
+          </div>
+          <div class="col-xs-6">
+              <div class="card text-white bg-info mb-3" style="max-width: 18rem;">
+                  <div class="card-header">Detected Emotion:</div>
+                  <div class="card-body">
+                    <p class="card-text"><br/><br/><br/><br/></p>
+                  </div>
+                </div>
+          </div>
+    </div>
+    
+    <div class="row">
+        <h1 class="bg-success">Individual module probabilities</h1>
+   </div>
+   
+   <div class = "row">
+    <div class="col-xs-4">
+      <div class="container-fluid" id="video"></div>
+    </div>
+    <div class="col-xs-4">
+      <div class="container-fluid" id="audio"></div>
+    </div>
+    <div class="col-xs-4">
+      <div class="container-fluid" id="text"></div>
+    </div>
+   </div>
+    
+  </div>
+
+  <hr>
+  <!-- /container -->
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+  <script src="http://code.highcharts.com/highcharts.js"></script>
+  <script src="http://code.highcharts.com/highcharts-more.js"></script>
+  <script src="http://code.highcharts.com/modules/exporting.js"></script>
+
+    <!-- /custom scripts -->
+  <script src="/static/js/dashboard.js"></script>
+
+  <!-- <script src="/static/js/videoScript.js"></script> -->
+
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+</body>
+
+</html>
