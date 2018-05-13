@@ -50,9 +50,9 @@ def main():
     toneProbUpdate = False
     speechProbUpdate = False
 
-    videoWeight = 0.0
-    toneWeight = 0.0
-    speechWeight = 0.0
+    videoWeight = 0
+    toneWeight = 0
+    speechWeight = 0
 
     videoProbQ = Queue()
     toneProbQ = Queue()
@@ -108,7 +108,8 @@ def main():
             # If classifier doesn't update, we reduce the weight
             # Other parameters for weight reduction can be considered here
             videoProbUpdate = False
-            videoWeight -= 0.2
+            if videoWeight >= 0.2:
+                videoWeight -= 0.2
 
             
         try:
@@ -119,14 +120,16 @@ def main():
             toneAttrs = toneAttrQ.get()
         except queue.Empty:
             toneProbUpdate = False
-            toneWeight -= 0.2
+            if toneWeight >= 0.2:
+                toneWeight -= 0.2
         try:
             speechProbs = speechProbQ.get(block=False)
             speechProbUpdate = True
             speechWeight = 1.0
         except queue.Empty:
             speechProbUpdate = False
-            speechWeight -= 0.2
+            if speechWeight >= 0.2:
+                speechWeight -= 0.2
 
 
         print("Probabilities at -> " + str(counter) + " seconds")      
@@ -151,7 +154,7 @@ def main():
         print("Probs : ")
         print(weightedAvgProbs)
         print("\n")
-
+        
         transmitArray = [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs,  videoAttrs] 
         arrayGood = True
         for x in transmitArray:
