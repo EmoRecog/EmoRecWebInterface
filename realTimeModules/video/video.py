@@ -70,6 +70,7 @@ def detectEmotionsVideo(videoProbQ, videoAttrQ, videoInput):
     #init root directory path
     ROOT_VIDEOMODULE = os.path.dirname(os.path.realpath(__file__))
 
+    WEBINTERFACE_VID_OUTPUT = os.path.join(os.path.dirname(os.path.dirname(ROOT_VIDEOMODULE)), 'static', 'video.png')
 
     # print("VIDEO -> videoInput : " + videoInput)
     emotions = ["anger","disgust", "happiness", "neutral", "sadness", "surprise"] #Emotion list
@@ -175,7 +176,14 @@ def detectEmotionsVideo(videoProbQ, videoAttrQ, videoInput):
             proc_frame = frame
             cv2.putText(proc_frame, "frame : "+str(counter/skipframe), (30,30), cv2.FONT_HERSHEY_PLAIN, 1.5, 255)
             
+        # TODO: show these outputs in the webinterface  video module
         cv2.imshow("original_feed", orig_frame) #Display the frame
+        
+        # saving output for dashboard display
+        resized_frame = cv2.resize(orig_frame, (200,150))
+        cv2.imwrite(WEBINTERFACE_VID_OUTPUT, resized_frame)
+    
+
         cv2.imshow("processed_feed", proc_frame)
         if cv2.waitKey(1) & 0xFF == ord('q'): #Exit program when the user presses 'q'
             break        

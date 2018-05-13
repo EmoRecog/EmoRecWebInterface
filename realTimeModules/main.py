@@ -50,9 +50,9 @@ def main():
     toneProbUpdate = False
     speechProbUpdate = False
 
-    videoWeight = 0.0
-    toneWeight = 0.0
-    speechWeight = 0.0
+    videoWeight = 0
+    toneWeight = 0
+    speechWeight = 0
 
     videoProbQ = Queue()
     toneProbQ = Queue()
@@ -108,24 +108,28 @@ def main():
             # If classifier doesn't update, we reduce the weight
             # Other parameters for weight reduction can be considered here
             videoProbUpdate = False
-            videoWeight -= 0.2
+            if videoWeight >= 0.2:
+                videoWeight -= 0.2
 
             
         try:
             toneProbs = toneProbQ.get(block=False)
             toneProbUpdate = True
+            toneProbs = np.zeros(6) + 50
             toneWeight = 1.0
             toneAttrs = toneAttrQ.get()
         except queue.Empty:
             toneProbUpdate = False
-            toneWeight -= 0.2
+            if toneWeight >= 0.2:
+                toneWeight -= 0.2
         try:
-            speechProbs = toneProbQ.get(block=False)
+            speechProbs = speechProbQ.get(block=False)
             speechProbUpdate = True
             speechWeight = 1.0
         except queue.Empty:
             speechProbUpdate = False
-            speechWeight -= 0.2
+            if speechWeight >= 0.2:
+                speechWeight -= 0.2
 
 
         print("Probabilities at -> " + str(counter) + " seconds")      
@@ -150,10 +154,15 @@ def main():
         print("Probs : ")
         print(weightedAvgProbs)
         print("\n")
-
+        
         transmitArray = [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs,  videoAttrs] 
-        with open(os.path.join(PICKLES,'pickleFile'), 'wb') as fp:
-                    pickle.dump(transmitArray, fp)
+        arrayGood = True
+        for x in transmitArray:
+            if x is None:
+                arrayGood = False
+        if arrayGood:
+            with open(os.path.join(PICKLES,'pickleFile'), 'wb') as fp:
+                pickle.dump(transmitArray, fp)
 
 
         # the video module processes more than 1 frame per second, 

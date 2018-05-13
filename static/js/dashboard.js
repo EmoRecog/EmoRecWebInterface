@@ -180,6 +180,7 @@ $(document).ready(function() {
             text: 'Weights of individual modules'
         },
         xAxis: {
+            range : 1,
             categories: ['Video', 'Audio', 'Text'],
             title: {
                 text: null
