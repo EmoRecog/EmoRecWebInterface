@@ -114,13 +114,14 @@ def main():
         try:
             toneProbs = toneProbQ.get(block=False)
             toneProbUpdate = True
+            toneProbs = np.zeros(6) + 50
             toneWeight = 1.0
             toneAttrs = toneAttrQ.get()
         except queue.Empty:
             toneProbUpdate = False
             toneWeight -= 0.2
         try:
-            speechProbs = toneProbQ.get(block=False)
+            speechProbs = speechProbQ.get(block=False)
             speechProbUpdate = True
             speechWeight = 1.0
         except queue.Empty:
@@ -152,8 +153,13 @@ def main():
         print("\n")
 
         transmitArray = [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs,  videoAttrs] 
-        with open(os.path.join(PICKLES,'pickleFile'), 'wb') as fp:
-                    pickle.dump(transmitArray, fp)
+        arrayGood = True
+        for x in transmitArray:
+            if x is None:
+                arrayGood = False
+        if arrayGood:
+            with open(os.path.join(PICKLES,'pickleFile'), 'wb') as fp:
+                pickle.dump(transmitArray, fp)
 
 
         # the video module processes more than 1 frame per second, 
