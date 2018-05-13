@@ -6,7 +6,7 @@ from multiprocessing import Process, Queue
 
 import numpy as np
 
-from speech.speech import generateSpeechProbs
+from speech.speech import generateSpeechProbs, detectEmotionsSpeech
 from tone.tone import generateToneProbs, detectEmotionsTone
 from video.video import detectEmotionsVideo, generateVideoProbs
 from audioRecorder.audioRecorder import startAudioRecorder
@@ -58,7 +58,8 @@ def main():
     videoProbQ = Queue()
     toneProbQ = Queue()
     speechProbQ = Queue()
-    utteranceQ = Queue()
+    utteranceToneQ = Queue()
+    utteranceSpeechQ = Queue()
 
     videoAttrQ = Queue()
     toneAttrQ = Queue()
@@ -68,9 +69,10 @@ def main():
     # videoProcess = Process(target=generateVideoProbs, args=(videoProbQ,))
     videoProcess = Process(target=detectEmotionsVideo, args=(videoProbQ, videoAttrQ,os.path.join(ROOT_REALTIMEMODULES, "video", "test","videoplayback.mp4")))
     # toneProcess = Process(target=generateToneProbs, args=(toneProbQ,))
-    toneProcess = Process(target=detectEmotionsTone, args=(toneProbQ, toneAttrQ, utteranceQ))
-    speechProcess = Process(target=generateSpeechProbs, args=(speechProbQ,))
-    audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceQ,))
+    toneProcess = Process(target=detectEmotionsTone, args=(toneProbQ, toneAttrQ, utteranceToneQ))
+    # speechProcess = Process(target=generateSpeechProbs, args=(speechProbQ,))
+    speechProcess = Process(target=detectEmotionsSpeech, args=(speechProbQ, speechAttrQ, utteranceSpeechQ))
+    audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceToneQ, utteranceSpeechQ))
 
     videoProcess.start()
     toneProcess.start()
@@ -80,6 +82,7 @@ def main():
     #default values, each will return two values : [Frame/utterence/transcription , emotionLabel]
     videoAttrs = 0
     toneAttrs = 0
+    speechAttrs = 0
 
     counter = 0
     # use a scheduler here if you want the function call at specified time
@@ -127,13 +130,18 @@ def main():
             if toneWeight >= 0.2:
                 toneWeight -= 0.2
         try:
+            # TODO refresh weight later, hacked together now
             speechProbs = speechProbQ.get(block=False)
             speechProbUpdate = True
-            speechWeight = 1.0
+            # speechWeight = 1.0
+            speechWeight = 0.2
+            speechAttrs = speechAttrQ.get()
         except queue.Empty:
             speechProbUpdate = False
-            if speechWeight >= 0.2:
-                speechWeight -= 0.2
+            # if speechWeight >= 0.2:
+            #     speechWeight -= 0.2
+            if speechWeight >= 0.04:
+                speechWeight -= 0.04
 
 
         print("Probabilities at -> " + str(counter) + " seconds")      
@@ -149,18 +157,25 @@ def main():
         print("Tone probs : " + str(toneProbs))
         
         print("Speech Probs : UPDATE : " + str(speechProbUpdate))
-        print(speechProbs)
+        if(speechProbUpdate):
+            print("Transcript : " + str(speechAttrs[0]))
+            print("Emotion Label : "+ str(speechAttrs[1]))
+            print("Speech probs : " + str(speechProbs))
         
         weights = [videoWeight, toneWeight, speechWeight]
         emotion, weightedAvgProbs = majorityVotedEmotion(combinedVideoProbs, toneProbs, speechProbs, weights)
         print("Majority Voted Emotion : " + str(emotion))
-        print("Weights : ") 
+        print("Weights : ", end = "") 
         print(weights)
-        print("Probs : ")
+        print("WEIGHTED Probs : ", end = "")
         print(weightedAvgProbs)
         print("\n")
         
-        transmitArray = [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs,  videoAttrs, toneAttrs] 
+        # covering for the hack written in speech weight update
+        # correct display on console, fake display on web interface
+        weights[2] *= 5
+
+        transmitArray = [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs,  videoAttrs, toneAttrs, speechAttrs] 
         arrayGood = True
         for x in transmitArray:
             if x is None:

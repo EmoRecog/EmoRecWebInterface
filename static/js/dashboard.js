@@ -83,6 +83,8 @@ $(document).ready(function() {
         yAxis: {
             minPadding: 0.2,
             maxPadding: 0.2,
+            min : 0,
+            max : 100,
             title: {
                 text: 'Probability',
             }
@@ -163,6 +165,7 @@ $(document).ready(function() {
         },
         yAxis: {
             min: 0,
+            max : 1,
             title: {
                 text: 'Value',
                 align: 'high'
