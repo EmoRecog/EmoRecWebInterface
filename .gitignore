@@ -14,3 +14,11 @@
 
 # Backups
 *~
+
+# pycache
+__pycache__/
+*.py[cod]
+*/__pycache__/
+
+# pickles
+picklesForInterface/
