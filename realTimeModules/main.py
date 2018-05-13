@@ -161,7 +161,7 @@ def main():
         # remove this time.sleep(1) call to see 'no update' in video module
 
         # time.sleep(0) should be zero for final code
-        time.sleep(1)
+        # time.sleep(1)
         counter += 1
 
 

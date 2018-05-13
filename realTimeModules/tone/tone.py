@@ -69,7 +69,6 @@ def detectEmotionsTone(toneProbQ, toneAttrQ, utteranceQ):
                 # print("saved " + os.path.join(OUTPUT_DIR, "mic_" + str(utteranceCOunt) + ".wav"))
                 
                 print("TONE -> Utterance " + str(utteranceCount) + " recorded")
-                utteranceCount += 1
 
                 utterance = np.fromstring(utteranceData, np.int16)
                 frameFeatureMatrix = extractFeatures(utterance, RATE)
@@ -93,6 +92,8 @@ def detectEmotionsTone(toneProbQ, toneAttrQ, utteranceQ):
                 toneAttrs = [utteranceCount, emotions[emotionLabelNum]]
                 toneAttrQ.put(toneAttrs)
                 toneProbQ.put(avgSegmentProbabilities)
+
+                utteranceCount += 1
 
         except queue.Full:
             pass
