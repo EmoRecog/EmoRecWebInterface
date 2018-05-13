@@ -9,7 +9,7 @@ def generateSpeechProbs(speechProbQ):
     while(True):
         lock.acquire()
         try:
-            speechProbs = randomGenerator.rand(6)
+            speechProbs = randomGenerator.rand(4) 
             speechProbQ.put(speechProbs, block=False)
         except queue.Full:
             pass

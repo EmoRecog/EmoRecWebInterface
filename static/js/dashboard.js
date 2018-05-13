@@ -1,5 +1,5 @@
 var linePlot, spiderPlot, weights, video, audio, text;
-
+var time = 0;
 /**
  * Request data from the server, add it to the graph and set a timeout
  * to request again
@@ -10,58 +10,35 @@ function requestData() {
     $.ajax({
         url: '/live-data',
         success: function(point) {
-         //   console.log(point)
+        //    console.log(point)
             var series = linePlot.series[0],
             shift = series.data.length > 200; // shift if the series is longer than 20
             
-            /*
-            // format:
-            //[a, d, h, n, sad, sur, frame]    
-            //line plot
-            linePlot.series[0].addPoint([point[6], point[0]], true);
-            linePlot.series[1].addPoint([point[6], point[1]], true);
-            linePlot.series[2].addPoint([point[6], point[2]], true);
-            linePlot.series[3].addPoint([point[6], point[3]], true);
-            linePlot.series[4].addPoint([point[6], point[4]], true);
-            linePlot.series[5].addPoint([point[6], point[5]], true);
-            
-            //spider plot
-            spiderPlot.series[0].setData([point[0], point[1], point[2], point[3], point[4], point[5]],true)
-     
-            //weights plot
-            weights.series[0].setData([point[6], point[6], point[6]], true)
-
-            //video plot
-
-            //audio plot
-
-            //text plot
-            */
-
-
-            //format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs, videoAttr]
-            // size :  [    6                3           6       6           6              2]
+            //format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs, videoAttrs, toneAttrs]
+            // size :  [    4                3           6       4           4              2       2       ]
              //line plot
-             linePlot.series[0].addPoint([point[27], point[0]], true);
-             linePlot.series[1].addPoint([point[27], point[1]], true);
-             linePlot.series[2].addPoint([point[27], point[2]], true);
-             linePlot.series[3].addPoint([point[27], point[3]], true);
-             linePlot.series[4].addPoint([point[27], point[4]], true);
-             linePlot.series[5].addPoint([point[27], point[5]], true);
+             linePlot.series[0].addPoint([time, point[0]], true);      
+             linePlot.series[1].addPoint([time, point[1]], true);
+             linePlot.series[2].addPoint([time, point[2]], true);
+             linePlot.series[3].addPoint([time, point[3]], true);
+        
             
             //spider plot
-            spiderPlot.series[0].setData([point[0], point[1], point[2], point[3], point[4], point[5]],true)
+            spiderPlot.series[0].setData([point[0], point[1], point[2], point[3]],true)
     
             //weights plot
-            weights.series[0].setData([point[6], point[7], point[8]], true)
+            weights.series[0].setData([point[4], point[5], point[6]], true)
 
             //video plot
-            video.series[0].setData([point[9], point[10], point[11], point[12], point[13], point[14]], true)
+            video.series[0].setData([point[7], point[8], point[9], point[10], point[11], point[12]], true)
+
             //audio plot
-            audio.series[0].setData([point[15], point[16], point[17], point[18], point[19], point[20]], true)
+            audio.series[0].setData([point[13], point[14], point[15], point[16]], true)
+
             //text plot
-            text.series[0].setData([point[21], point[22], point[23], point[24], point[25], point[26]], true)
+            text.series[0].setData([point[17], point[18], point[19], point[20]], true)
             
+            time +=1;
             // call it again after one second
             setTimeout(requestData, 1000);
         },
@@ -100,7 +77,7 @@ $(document).ready(function() {
           minPadding: 0.2,
             maxPadding: 0.2,
             title: {
-                text: 'Frame',
+                text: 'Time elapsed(seconds)',
             }
         },
         yAxis: {
@@ -112,9 +89,9 @@ $(document).ready(function() {
         },
            // format:
             //[a, d, h, n, sad, sur, frame]
-        series: [ { name: 'Anger',data: [] },{ name: 'Disgust',data: [] },
-                  { name: 'Happy',data: [] },{ name: 'Neutral',data: [] },
-                  { name: 'Sad',data: []   },{ name: 'Surprise', data: [] }, ]
+        series: [ { name: 'Neutral',data: [] },{ name: 'Sadness/Fear',data: [] },
+                  { name: 'Anger/Frustration/Disgust',data: [] },{ name: 'Happiness/Excitment/Surprise',data: [] },
+                  ]
     });
 
     spiderPlot = new Highcharts.Chart({
@@ -135,10 +112,8 @@ $(document).ready(function() {
         },
     
         xAxis: {
-            // format:
-            //[a, d, h, n, sad, sur, frame]
-            categories: ['Angry', 'Disgusted', 'Happy', 'Neutral',
-                'Sad', 'Surprise'],
+            
+            categories: ['Neutral', 'Sadness/<br/>Fear', 'Anger/<br/>Frustration/<br/>Disgust', 'Happiness/<br/>Excitment/<br/>Surprise'],
             tickmarkPlacement: 'on',
             lineWidth: 0
         },
@@ -164,7 +139,7 @@ $(document).ready(function() {
         },
     
         series: [{
-            name: 'Probability of emotion',
+            name: 'Probabilities',
             data: [],
             pointPlacement: 'on'
         }]
@@ -173,7 +148,7 @@ $(document).ready(function() {
     
     weights = new Highcharts.Chart({
         chart: {
-            type: 'bar',
+            type: 'column',
             renderTo: 'weights',
         },
         title: {
@@ -199,7 +174,8 @@ $(document).ready(function() {
         plotOptions: {
             bar: {
                 dataLabels: {
-                    enabled: true
+                    enabled: true,
+                    colorByPoint : true
                 }
             }
         },
@@ -207,8 +183,7 @@ $(document).ready(function() {
             layout: 'vertical',
             align: 'right',
             verticalAlign: 'top',
-            x: -40,
-            y: 80,
+           
             floating: true,
             borderWidth: 1,
             backgroundColor: ((Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'),
@@ -218,7 +193,7 @@ $(document).ready(function() {
             enabled: false
         },
         series: [{
-            name: 'Influence',
+            name: 'Emphasis',
             data: []
         }]
     });
@@ -301,8 +276,7 @@ $(document).ready(function() {
         xAxis: {
             // format:
             //[a, d, h, n, sad, sur, frame]
-            categories: ['Angry', 'Disgusted', 'Happy', 'Neutral',
-                'Sad', 'Surprise'],
+            categories: ['Neutral', 'Sadness/<br/>Fear', 'Anger/<br/>Frustration/<br/>Disgust', 'Happiness/<br/>Excitment/<br/>Surprise'],
             tickmarkPlacement: 'on',
             lineWidth: 0
         },
@@ -357,8 +331,7 @@ $(document).ready(function() {
         xAxis: {
             // format:
             //[a, d, h, n, sad, sur, frame]
-            categories: ['Angry', 'Disgusted', 'Happy', 'Neutral',
-                'Sad', 'Surprise'],
+            categories: ['Neutral', 'Sadness/<br/>Fear', 'Anger/<br/>Frustration/<br/>Disgust', 'Happiness/<br/>Excitment/<br/>Surprise'],
             tickmarkPlacement: 'on',
             lineWidth: 0
         },

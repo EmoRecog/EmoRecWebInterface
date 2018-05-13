@@ -43,6 +43,7 @@ def main():
     # spawn 3 processes which are asynchronous
     # each has an infinite loop
     videoProbs = None
+    combinedVideoProbs = None
     toneProbs = None
     speechProbs = None
 
@@ -76,9 +77,9 @@ def main():
     speechProcess.start()
     audioRecorderProcess.start()
 
-    #default values
-    videoAttrs = 0 
-
+    #default values, each will return two values : [Frame/utterence/transcription , emotionLabel]
+    videoAttrs = 0
+    toneAttrs = 0
 
     counter = 0
     # use a scheduler here if you want the function call at specified time
@@ -94,7 +95,10 @@ def main():
             # updated it yet, for new input. it will throw an exception, which 
             # is caught in except block, where we reduce weight of this classifier
             videoProbs = videoProbQ.get(block=False)
-            
+            combinedVideoProbs = np.array([videoProbs[3],   # neu
+                                            videoProbs[4],  # sad_fea
+                                            videoProbs[0]+videoProbs[1], # ang_fru_dis
+                                            videoProbs[2]+videoProbs[5]]) # hap_exc_sur
             # Everytime a fresh update occurs, the weight for classifier is set to 1
             # Other parameters for weight increments can be considered here
             # such as the frame contrast etc.
@@ -115,7 +119,7 @@ def main():
         try:
             toneProbs = toneProbQ.get(block=False)
             toneProbUpdate = True
-            toneProbs = np.zeros(6) + 50
+            # toneProbs = np.zeros(6) + 50
             toneWeight = 1.0
             toneAttrs = toneAttrQ.get()
         except queue.Empty:
@@ -136,18 +140,19 @@ def main():
         print("Video Probs : UPDATE : " + str(videoProbUpdate))
         if(videoProbUpdate):
             print("Frame no : " + str(videoAttrs[0]) + ", EmotionLabel : " + str(videoAttrs[1]))
-        print(videoProbs)
+        print("Video Probs : " + str(videoProbs))
+        print("Combined video probs : " + str(combinedVideoProbs))
         
         print("Tone Probs : UPDATE : " + str(toneProbUpdate))
         if(toneProbUpdate):
             print("Utterance no : " + str(toneAttrs[0]) + ", Emotion Label : " + str(toneAttrs[1]))
-        print(toneProbs)
+        print("Tone probs : " + str(toneProbs))
         
         print("Speech Probs : UPDATE : " + str(speechProbUpdate))
         print(speechProbs)
         
         weights = [videoWeight, toneWeight, speechWeight]
-        emotion, weightedAvgProbs = majorityVotedEmotion(videoProbs, toneProbs, speechProbs, weights)
+        emotion, weightedAvgProbs = majorityVotedEmotion(combinedVideoProbs, toneProbs, speechProbs, weights)
         print("Majority Voted Emotion : " + str(emotion))
         print("Weights : ") 
         print(weights)
@@ -155,7 +160,7 @@ def main():
         print(weightedAvgProbs)
         print("\n")
         
-        transmitArray = [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs,  videoAttrs] 
+        transmitArray = [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs,  videoAttrs, toneAttrs] 
         arrayGood = True
         for x in transmitArray:
             if x is None:
