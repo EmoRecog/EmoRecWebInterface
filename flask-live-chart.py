@@ -8,8 +8,9 @@ import pickle
 app = Flask(__name__)
 #readFile = 'faceRecog/testfile'     #format : [a, d, h, n, sad, sur, frame]
 
-#format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs,    videoAttr         ]
-# size :  [    6                3           6       6           6             2  ]
+
+# //format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs, videoAttrs, toneAttrs]
+# // size :  [    4                3           6       4           4              2       2       ]
 ROOT_INTERFACE = os.path.dirname(os.path.realpath(__file__))
 readFile = os.path.join(ROOT_INTERFACE, 'picklesForInterface','pickleFile')
 @app.route('/')
