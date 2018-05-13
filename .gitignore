@@ -24,3 +24,6 @@ __pycache__/
 picklesForInterface/
 
 .directory
+
+# ignore test folders
+*/test

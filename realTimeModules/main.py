@@ -9,6 +9,7 @@ import numpy as np
 from speech.speech import generateSpeechProbs
 from tone.tone import generateToneProbs
 from video.video import detectEmotionsVideo, generateVideoProbs
+from audioRecorder.audioRecorder import startAudioRecorder
 
 #TODO: clamp weight values between 0 and 1
 # for testing
@@ -56,6 +57,7 @@ def main():
     videoProbQ = Queue()
     toneProbQ = Queue()
     toneProbQ = Queue()
+    utteranceQ = Queue()
 
     videoAttrQ = Queue()
     toneAttrQ = Queue()
@@ -66,11 +68,13 @@ def main():
     videoProcess = Process(target=detectEmotionsVideo, args=(videoProbQ, videoAttrQ,os.path.join(ROOT_REALTIMEMODULES, "video", "test","videoplayback.mp4")))
     toneProcess = Process(target=generateToneProbs, args=(toneProbQ,))
     speechProcess = Process(target=generateSpeechProbs, args=(toneProbQ,))
+    audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceQ,))
 
     videoProcess.start()
     toneProcess.start()
     speechProcess.start()
-    
+    audioRecorderProcess.start()
+
     #default values
     videoAttrs = 0 
 
