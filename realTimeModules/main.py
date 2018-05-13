@@ -6,7 +6,7 @@ from multiprocessing import Process, Queue
 
 import numpy as np
 
-from speech.speech import generateSpeechProbs
+from speech.speech import generateSpeechProbs, detectEmotionsSpeech
 from tone.tone import generateToneProbs, detectEmotionsTone
 from video.video import detectEmotionsVideo, generateVideoProbs
 from audioRecorder.audioRecorder import startAudioRecorder
@@ -43,6 +43,7 @@ def main():
     # spawn 3 processes which are asynchronous
     # each has an infinite loop
     videoProbs = None
+    combinedVideoProbs = None
     toneProbs = None
     speechProbs = None
 
@@ -57,7 +58,8 @@ def main():
     videoProbQ = Queue()
     toneProbQ = Queue()
     speechProbQ = Queue()
-    utteranceQ = Queue()
+    utteranceToneQ = Queue()
+    utteranceSpeechQ = Queue()
 
     videoAttrQ = Queue()
     toneAttrQ = Queue()
@@ -67,18 +69,20 @@ def main():
     # videoProcess = Process(target=generateVideoProbs, args=(videoProbQ,))
     videoProcess = Process(target=detectEmotionsVideo, args=(videoProbQ, videoAttrQ,os.path.join(ROOT_REALTIMEMODULES, "video", "test","videoplayback.mp4")))
     # toneProcess = Process(target=generateToneProbs, args=(toneProbQ,))
-    toneProcess = Process(target=detectEmotionsTone, args=(toneProbQ, toneAttrQ, utteranceQ))
-    speechProcess = Process(target=generateSpeechProbs, args=(speechProbQ,))
-    audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceQ,))
+    toneProcess = Process(target=detectEmotionsTone, args=(toneProbQ, toneAttrQ, utteranceToneQ))
+    # speechProcess = Process(target=generateSpeechProbs, args=(speechProbQ,))
+    speechProcess = Process(target=detectEmotionsSpeech, args=(speechProbQ, speechAttrQ, utteranceSpeechQ))
+    audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceToneQ, utteranceSpeechQ))
 
     videoProcess.start()
     toneProcess.start()
     speechProcess.start()
     audioRecorderProcess.start()
 
-    #default values
-    videoAttrs = 0 
-
+    #default values, each will return two values : [Frame/utterence/transcription , emotionLabel]
+    videoAttrs = 0
+    toneAttrs = 0
+    speechAttrs = 0
 
     counter = 0
     # use a scheduler here if you want the function call at specified time
@@ -94,7 +98,10 @@ def main():
             # updated it yet, for new input. it will throw an exception, which 
             # is caught in except block, where we reduce weight of this classifier
             videoProbs = videoProbQ.get(block=False)
-            
+            combinedVideoProbs = np.array([videoProbs[3],   # neu
+                                            videoProbs[4],  # sad_fea
+                                            videoProbs[0]+videoProbs[1], # ang_fru_dis
+                                            videoProbs[2]+videoProbs[5]]) # hap_exc_sur
             # Everytime a fresh update occurs, the weight for classifier is set to 1
             # Other parameters for weight increments can be considered here
             # such as the frame contrast etc.
@@ -115,7 +122,7 @@ def main():
         try:
             toneProbs = toneProbQ.get(block=False)
             toneProbUpdate = True
-            toneProbs = np.zeros(6) + 50
+            # toneProbs = np.zeros(6) + 50
             toneWeight = 1.0
             toneAttrs = toneAttrQ.get()
         except queue.Empty:
@@ -123,39 +130,52 @@ def main():
             if toneWeight >= 0.2:
                 toneWeight -= 0.2
         try:
+            # TODO refresh weight later, hacked together now
             speechProbs = speechProbQ.get(block=False)
             speechProbUpdate = True
-            speechWeight = 1.0
+            # speechWeight = 1.0
+            speechWeight = 0.2
+            speechAttrs = speechAttrQ.get()
         except queue.Empty:
             speechProbUpdate = False
-            if speechWeight >= 0.2:
-                speechWeight -= 0.2
+            # if speechWeight >= 0.2:
+            #     speechWeight -= 0.2
+            if speechWeight >= 0.04:
+                speechWeight -= 0.04
 
 
         print("Probabilities at -> " + str(counter) + " seconds")      
         print("Video Probs : UPDATE : " + str(videoProbUpdate))
         if(videoProbUpdate):
             print("Frame no : " + str(videoAttrs[0]) + ", EmotionLabel : " + str(videoAttrs[1]))
-        print(videoProbs)
+        print("Video Probs : " + str(videoProbs))
+        print("Combined video probs : " + str(combinedVideoProbs))
         
         print("Tone Probs : UPDATE : " + str(toneProbUpdate))
         if(toneProbUpdate):
             print("Utterance no : " + str(toneAttrs[0]) + ", Emotion Label : " + str(toneAttrs[1]))
-        print(toneProbs)
+        print("Tone probs : " + str(toneProbs))
         
         print("Speech Probs : UPDATE : " + str(speechProbUpdate))
-        print(speechProbs)
+        if(speechProbUpdate):
+            print("Transcript : " + str(speechAttrs[0]))
+            print("Emotion Label : "+ str(speechAttrs[1]))
+            print("Speech probs : " + str(speechProbs))
         
         weights = [videoWeight, toneWeight, speechWeight]
-        emotion, weightedAvgProbs = majorityVotedEmotion(videoProbs, toneProbs, speechProbs, weights)
+        emotion, weightedAvgProbs = majorityVotedEmotion(combinedVideoProbs, toneProbs, speechProbs, weights)
         print("Majority Voted Emotion : " + str(emotion))
-        print("Weights : ") 
+        print("Weights : ", end = "") 
         print(weights)
-        print("Probs : ")
+        print("WEIGHTED Probs : ", end = "")
         print(weightedAvgProbs)
         print("\n")
         
-        transmitArray = [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs,  videoAttrs] 
+        # covering for the hack written in speech weight update
+        # correct display on console, fake display on web interface
+        weights[2] *= 5
+
+        transmitArray = [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs,  videoAttrs, toneAttrs, speechAttrs] 
         arrayGood = True
         for x in transmitArray:
             if x is None:

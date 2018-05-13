@@ -91,7 +91,7 @@ def detectEmotionsTone(toneProbQ, toneAttrQ, utteranceQ):
                 # print("----------------------------")
                 toneAttrs = [utteranceCount, emotions[emotionLabelNum]]
                 toneAttrQ.put(toneAttrs)
-                toneProbQ.put(avgSegmentProbabilities)
+                toneProbQ.put(avgSegmentProbabilities * 100)
 
                 utteranceCount += 1
 
