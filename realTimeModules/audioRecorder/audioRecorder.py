@@ -39,17 +39,17 @@ def getUtterance(stream, RATE, CHUNK, THRESHOLD, CHECK_SILENCE_SECONDS, RECORD_S
             checkData += streamData
         
         if(isSilent(checkData, THRESHOLD)):
-            print("SILENCE")
+            print("RECORDER -> Silence")
             utteranceData = b'' # wipe the previous 1-second audios
             count = 0
-            print("DISCARDED PREVIOUS CLIPS")
+            print("RECORDER -> Discarded previous clips")
             continue
         else:
             utteranceData += checkData
-            print("ADDED CLIP " + str(count))
+            print("RECORDER -> Added clip " + str(count))
             count += 1
             if(count >5):
-                print("RETURNING UTTERANCE : ")
+                print("RECORDER -> Returning generated utterance ")
                 break
         
     return utteranceData
@@ -122,7 +122,9 @@ def startAudioRecorder(utteranceQ):
                         frames_per_buffer=CHUNK)
 
         THRESHOLD = getThreshold(stream, RATE, CHUNK, BASELINE_SECONDS) +3000 # just to be safe
-        print("THRESHOLD : " + str(THRESHOLD))
+        print("________________________________________")
+        print("RECORDER -> Threshold : " + str(THRESHOLD))
+        print("________________________________________")
 
         utteranceCount = 0
         while(True):
