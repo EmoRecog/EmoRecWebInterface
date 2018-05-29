@@ -60,7 +60,7 @@ def detectEmotionsTone(toneProbQ, toneAttrQ, utteranceQ):
                 utteranceData = utteranceQ.get()
                 
                 # set up the wav container to store the recorded 5 second utterances
-                wavFile = wave.open(os.path.join(OUTPUT_DIR, "mic_" + str(utteranceCount) + ".wav"), "w")
+                wavFile = wave.open(os.path.join(OUTPUT_DIR, "tone_" + str(utteranceCount) + ".wav"), "w")
                 wavFile.setnchannels(CHANNELS)
                 wavFile.setsampwidth(SAMPLEWIDTH)
                 wavFile.setframerate(RATE)
