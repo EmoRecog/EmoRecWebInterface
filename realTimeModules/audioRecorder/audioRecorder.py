@@ -103,9 +103,10 @@ def test():
     stream.close()
     p.terminate()
 
-def readMic(utteranceToneQ,utteranceSpeechQ):
+def readMic(utteranceToneQ,utteranceSpeechQ, audioInputDevice):
     # setup 
-    DEVICE_IP_HW = "Camera" # this usually is hw:2,0
+    DEVICE_IP_HW = audioInputDevice # this usually is hw:2,0
+    # DEVICE_IP_HW = audioInput
     FORMAT = pyaudio.paInt16
     CHANNELS = 1
     RATE = 16000
@@ -152,7 +153,7 @@ def readMic(utteranceToneQ,utteranceSpeechQ):
     except :
         pass
 
-def readWavFile(utteranceToneQ,utteranceSpeechQ, audioInput):
+def readWavFile(utteranceToneQ,utteranceSpeechQ, audioInputFile):
     '''
     this reads 5 sec utterances from a file (THRESHOLD isn't used), 
     and passes on this utterances with 5 sec delay
@@ -166,7 +167,7 @@ def readWavFile(utteranceToneQ,utteranceSpeechQ, audioInput):
     CHANNELS = 1
 
     try:
-        MP4_FILE = audioInput
+        MP4_FILE = audioInputFile
         FILE = MP4_FILE[:-4]
         print("FILE -> " + str(FILE))
     except :
@@ -180,7 +181,7 @@ def readWavFile(utteranceToneQ,utteranceSpeechQ, audioInput):
     subprocess.call(command,shell=True)
     print("DONE")
 
-    WAV_IN = audioInput[:-4]+".wav"
+    WAV_IN = audioInputFile[:-4]+".wav"
     testWav = wave.open(WAV_IN,"r")
 
     print("________________________________________")
@@ -225,11 +226,14 @@ def readWavFile(utteranceToneQ,utteranceSpeechQ, audioInput):
             break
 
 def startAudioRecorder(utteranceToneQ,utteranceSpeechQ,audioInput):
-    # readMic(utteranceToneQ, utteranceSpeechQ)
-    readWavFile(utteranceToneQ, utteranceSpeechQ, audioInput)
+    if(audioInput['input']=='mic'):
+        readMic(utteranceToneQ, utteranceSpeechQ, audioInput['device'])
+    
+    if(audioInput['input']=='file'):
+        readWavFile(utteranceToneQ, utteranceSpeechQ, audioInput['file'])
      
 
 if __name__ == '__main__':
     # test()
     # startAudioRecorder()
-    test()
+    pass
