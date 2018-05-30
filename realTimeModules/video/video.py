@@ -96,8 +96,12 @@ def detectEmotionsVideo(videoProbQ, videoAttrQ, videoInput):
     # except ValueError:
     #     pass
     
+    try:
+        videoInput = int(videoInput)
+    except ValueError:
+        pass
+
     video_capture = cv2.VideoCapture(videoInput)
-    # video_capture = cv2.VideoCapture(2)
 
     proc_frame = np.zeros((350,350,3), np.uint8)
     counter = 0
