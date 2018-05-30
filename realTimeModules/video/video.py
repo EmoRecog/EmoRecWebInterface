@@ -90,20 +90,26 @@ def detectEmotionsVideo(videoProbQ, videoAttrQ, videoInput):
     # emotion detector
     clf = joblib.load(ROOT_VIDEOMODULE + "/EmoRecogFacial.pkl")
     
-    skipframe=24
+    skipframe=48
     # try:
     #     skipframe = int(sys.argv[2])
     # except ValueError:
     #     pass
     
-    # video_capture = cv2.VideoCapture("/home/srp3003/CombiningProbs/" + videoInput)
-    video_capture = cv2.VideoCapture(2)
+    try:
+        videoInput = int(videoInput)
+    except ValueError:
+        pass
+
+    video_capture = cv2.VideoCapture(videoInput)
 
     proc_frame = np.zeros((350,350,3), np.uint8)
     counter = 0
     
 
     while(True):
+        
+
         counter += 1
         ret, orig_frame = video_capture.read()
         
@@ -111,7 +117,6 @@ def detectEmotionsVideo(videoProbQ, videoAttrQ, videoInput):
             break
         
         if( counter % skipframe == 0):
-            
             frame = orig_frame
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             
@@ -177,6 +182,7 @@ def detectEmotionsVideo(videoProbQ, videoAttrQ, videoInput):
             cv2.putText(proc_frame, "frame : "+str(counter/skipframe), (30,30), cv2.FONT_HERSHEY_PLAIN, 1.5, 255)
             
         # TODO: show these outputs in the webinterface  video module
+        time.sleep(1/float(35))
         cv2.imshow("original_feed", orig_frame) #Display the frame
         
         # saving output for dashboard display

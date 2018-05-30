@@ -2,7 +2,10 @@ import os
 import pickle
 import queue  # multiprocessing.Queue borrows exceptions from Queue
 import time
+import sys
+import argparse
 from multiprocessing import Process, Queue
+
 
 import numpy as np
 
@@ -28,10 +31,14 @@ def majorityVotedEmotion(videoProbs, toneProbs, speechProbs, weights = None):
 
     return majorityVote, weightedAvgProbs
 
-def main():
+def main():    
+    emotions = ['neu','sad_fea', 'ang_fru','hap_exc_sur']
+    
     #init paths
     ROOT_INTERFACE = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     ROOT_REALTIMEMODULES = os.path.dirname(os.path.realpath(__file__))
+    TESTVIDEOS_DIR = os.path.join(ROOT_INTERFACE, "testVideos")
+    
     VIDEO = os.path.join(ROOT_REALTIMEMODULES, "video")
     VIDEO_TEST = os.path.join(VIDEO,"test")
     TONE = os.path.join(ROOT_REALTIMEMODULES, "tone")
@@ -64,15 +71,48 @@ def main():
     videoAttrQ = Queue()
     toneAttrQ = Queue()
     speechAttrQ = Queue()
-    # Last 2 are for future use
+
+    
+    # parse the command line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--file","-f",help="name of the file, in testVideos")
+    parser.add_argument("--camera","-c",help="index of camera device")
+    parser.add_argument("--mic", "-m", help="name of the mic device")
+    parser.add_argument_group()
+
+    if(len(sys.argv)<2):
+        parser.print_usage()
+        sys.exit(1)
+
+    args = parser.parse_args()
+    
+    if(args.file):
+        print(args.file)
+        videoProcess = Process(target=detectEmotionsVideo, args=(videoProbQ, videoAttrQ,os.path.join(TESTVIDEOS_DIR, args.file+".mp4")))
+        audioInput = {'input':'file', 'file':os.path.join(TESTVIDEOS_DIR, args.file+".mp4")}
+        audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceToneQ, utteranceSpeechQ, audioInput))
+
+    
+    if(args.mic or args.camera):
+        if(args.mic and args.camera):
+            print("camera : " + args.camera)
+            print("Mic : " + args.mic)
+            videoProcess = Process(target=detectEmotionsVideo, args=(videoProbQ, videoAttrQ,args.camera))
+            audioInput = {'input':'mic','device':args.mic}
+
+            audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceToneQ, utteranceSpeechQ,  audioInput))
+        else:
+            print("Input mic and camera!")
+
 
     # videoProcess = Process(target=generateVideoProbs, args=(videoProbQ,))
-    videoProcess = Process(target=detectEmotionsVideo, args=(videoProbQ, videoAttrQ,os.path.join(ROOT_REALTIMEMODULES, "video", "test","videoplayback.mp4")))
+    # TODO handle mp4 and avi
+    # videoProcess = Process(target=detectEmotionsVideo, args=(videoProbQ, videoAttrQ,os.path.join(TESTVIDEOS_DIR, sys.argv[1]+".mp4")))
     # toneProcess = Process(target=generateToneProbs, args=(toneProbQ,))
     toneProcess = Process(target=detectEmotionsTone, args=(toneProbQ, toneAttrQ, utteranceToneQ))
     # speechProcess = Process(target=generateSpeechProbs, args=(speechProbQ,))
     speechProcess = Process(target=detectEmotionsSpeech, args=(speechProbQ, speechAttrQ, utteranceSpeechQ))
-    audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceToneQ, utteranceSpeechQ))
+    # audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceToneQ, utteranceSpeechQ,  os.path.join(TESTVIDEOS_DIR, sys.argv[1]+".mp4")))
 
     videoProcess.start()
     toneProcess.start()
@@ -160,7 +200,7 @@ def main():
         if(speechProbUpdate):
             print("Transcript : " + str(speechAttrs[0]))
             print("Emotion Label : "+ str(speechAttrs[1]))
-            print("Speech probs : " + str(speechProbs))
+        print("Speech probs : " + str(speechProbs))
         
         weights = [videoWeight, toneWeight, speechWeight]
         emotion, weightedAvgProbs = majorityVotedEmotion(combinedVideoProbs, toneProbs, speechProbs, weights)
@@ -192,7 +232,7 @@ def main():
         # time.sleep(0) should be zero for final code
         time.sleep(1)
         counter += 1
-
-
+    
+        
 if __name__=="__main__":
     main()
