@@ -13,6 +13,7 @@ from speech.speech import generateSpeechProbs, detectEmotionsSpeech
 from tone.tone import generateToneProbs, detectEmotionsTone
 from video.video import detectEmotionsVideo, generateVideoProbs
 from audioRecorder.audioRecorder import startAudioRecorder
+from videoRecorder.videoRecorder import startVideoRecorder
 
 #TODO: clamp weight values between 0 and 1
 # for testing
@@ -65,8 +66,10 @@ def main():
     videoProbQ = Queue()
     toneProbQ = Queue()
     speechProbQ = Queue()
+    
     utteranceToneQ = Queue()
     utteranceSpeechQ = Queue()
+    frameQ = Queue()
 
     videoAttrQ = Queue()
     toneAttrQ = Queue()
@@ -87,37 +90,38 @@ def main():
     args = parser.parse_args()
     
     if(args.file):
-        print(args.file)
-        videoProcess = Process(target=detectEmotionsVideo, args=(videoProbQ, videoAttrQ,os.path.join(TESTVIDEOS_DIR, args.file+".mp4")))
+        print("FILE : " + args.file)
         audioInput = {'input':'file', 'file':os.path.join(TESTVIDEOS_DIR, args.file+".mp4")}
+        videoInput = {'input':'file', 'file':os.path.join(TESTVIDEOS_DIR, args.file+".mp4")}
         audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceToneQ, utteranceSpeechQ, audioInput))
-
+        videoRecorderProcess = Process(target=startVideoRecorder, args=(frameQ, videoInput))
     
     if(args.mic or args.camera):
         if(args.mic and args.camera):
             print("camera : " + args.camera)
             print("Mic : " + args.mic)
-            videoProcess = Process(target=detectEmotionsVideo, args=(videoProbQ, videoAttrQ,args.camera))
             audioInput = {'input':'mic','device':args.mic}
-
+            videoInput = {'input':'camera', 'device':args.camera}
             audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceToneQ, utteranceSpeechQ,  audioInput))
+            videoRecorderProcess = Process(target=startVideoRecorder, args=(frameQ, videoInput))
         else:
             print("Input mic and camera!")
 
 
     # videoProcess = Process(target=generateVideoProbs, args=(videoProbQ,))
-    # TODO handle mp4 and avi
-    # videoProcess = Process(target=detectEmotionsVideo, args=(videoProbQ, videoAttrQ,os.path.join(TESTVIDEOS_DIR, sys.argv[1]+".mp4")))
-    # toneProcess = Process(target=generateToneProbs, args=(toneProbQ,))
-    toneProcess = Process(target=detectEmotionsTone, args=(toneProbQ, toneAttrQ, utteranceToneQ))
     # speechProcess = Process(target=generateSpeechProbs, args=(speechProbQ,))
+    # toneProcess = Process(target=generateToneProbs, args=(toneProbQ,))
+
+    # TODO handle mp4 and avi
+    toneProcess = Process(target=detectEmotionsTone, args=(toneProbQ, toneAttrQ, utteranceToneQ))
     speechProcess = Process(target=detectEmotionsSpeech, args=(speechProbQ, speechAttrQ, utteranceSpeechQ))
-    # audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceToneQ, utteranceSpeechQ,  os.path.join(TESTVIDEOS_DIR, sys.argv[1]+".mp4")))
+    videoProcess = Process(target=detectEmotionsVideo, args=(videoProbQ,videoAttrQ, frameQ))
 
     videoProcess.start()
     toneProcess.start()
     speechProcess.start()
     audioRecorderProcess.start()
+    videoRecorderProcess.start()
 
     #default values, each will return two values : [Frame/utterence/transcription , emotionLabel]
     videoAttrs = 0
@@ -183,7 +187,11 @@ def main():
             if speechWeight >= 0.04:
                 speechWeight -= 0.04
 
+        # majority voting
+        weights = [videoWeight, toneWeight, speechWeight]
+        emotion, weightedAvgProbs = majorityVotedEmotion(combinedVideoProbs, toneProbs, speechProbs, weights)
 
+        
         print("Probabilities at -> " + str(counter) + " seconds")      
         print("Video Probs : UPDATE : " + str(videoProbUpdate))
         if(videoProbUpdate):
@@ -202,8 +210,7 @@ def main():
             print("Emotion Label : "+ str(speechAttrs[1]))
         print("Speech probs : " + str(speechProbs))
         
-        weights = [videoWeight, toneWeight, speechWeight]
-        emotion, weightedAvgProbs = majorityVotedEmotion(combinedVideoProbs, toneProbs, speechProbs, weights)
+        
         print("Majority Voted Emotion : " + str(emotion))
         print("Weights : ", end = "") 
         print(weights)
@@ -218,7 +225,7 @@ def main():
         print("SPEECH_EMOTION : " + str(np.argmax(speechProbs)))
         print("MAJORITY_EMOTION : " + str(np.argmax(weightedAvgProbs)))
         print("**********************************")
-
+        
 
         # covering for the hack written in speech weight update
         # correct display on console, fake display on web interface
