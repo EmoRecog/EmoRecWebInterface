@@ -211,6 +211,15 @@ def main():
         print(weightedAvgProbs)
         print("\n")
         
+        # comparison data
+        print("**********************************")
+        print("VIDEO_EMOTION : " + str(np.argmax(combinedVideoProbs)))
+        print("TONE_EMOTION : " + str(np.argmax(toneProbs)))
+        print("SPEECH_EMOTION : " + str(np.argmax(speechProbs)))
+        print("MAJORITY_EMOTION : " + str(np.argmax(weightedAvgProbs)))
+        print("**********************************")
+
+
         # covering for the hack written in speech weight update
         # correct display on console, fake display on web interface
         weights[2] *= 5
