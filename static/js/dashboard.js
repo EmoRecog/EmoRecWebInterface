@@ -10,8 +10,8 @@ function requestData() {
     $.ajax({
         url: '/live-data',
         success: function(point) {
-        //    console.log(point)
-            var series = linePlot.series[0],
+          //  console.log(point)
+            var series = linePlot.series[0];
             shift = series.data.length > 200; // shift if the series is longer than 20
             
             //format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs, videoAttrs, toneAttrs]
@@ -24,21 +24,23 @@ function requestData() {
         
             
             //spider plot
-            spiderPlot.series[0].setData([point[0], point[1], point[2], point[3]],true)
+            spiderPlot.series[0].setData([point[0], point[1], point[2], point[3]],true);
     
             //weights plot
-            weights.series[0].setData([point[4], point[5], point[6]], true)
+            weights.series[0].setData([point[4], point[5], point[6]], true);
 
             //video plot
-            video.series[0].setData([point[7], point[8], point[9], point[10], point[11], point[12]], true)
+            video.series[0].setData([point[7], point[8], point[9], point[10], point[11], point[12]], true);
 
             //audio plot
-            audio.series[0].setData([point[13], point[14], point[15], point[16]], true)
+            audio.series[0].setData([point[13], point[14], point[15], point[16]], true);
 
             //text plot
-            text.series[0].setData([point[17], point[18], point[19], point[20]], true)
+            text.series[0].setData([point[17], point[18], point[19], point[20]], true);
             
             time +=1;
+            
+            $('#detectedEmotionBox').html("Detected emotion: <strong>ASDASD</strong> <br><br><br><br><br>");
             // call it again after one second
             setTimeout(requestData, 1000);
         },
@@ -48,11 +50,11 @@ function requestData() {
 
 function refreshImage() {
     document.picture.src="/static/video.png?a=" +String(Math.random()*999);
-    setTimeout('refreshImage()', 100)
+    setTimeout('refreshImage()', 100);
 }
 
 $(document).ready(function() {
-    refreshImage()
+    refreshImage();
     linePlot = new Highcharts.Chart({
         chart: {
             renderTo: 'combinedLine',
@@ -65,7 +67,7 @@ $(document).ready(function() {
         },
         tooltip:{
             formatter:function(){
-                return 'Frame: ' + this.key + ' Probability: ' + this.y;
+                return 'Second: ' + this.key + ' Probability: ' + this.y;
             }
         },
         title: {
@@ -91,8 +93,10 @@ $(document).ready(function() {
         },
            // format:
             //[a, d, h, n, sad, sur, frame]
-        series: [ { name: 'Neutral',data: [] },{ name: 'Sadness/Fear',data: [] },
-                  { name: 'Anger/Frustration/Disgust',data: [] },{ name: 'Happiness/Excitment/Surprise',data: [] },
+        series: [ { name: 'Neutral',data: [], color:'yellow'  },
+                  { name: 'Sadness/Fear',data: [], color:'black' },
+                  { name: 'Anger/Frustration/Disgust',data: [], color:'red' },
+                  { name: 'Happiness/Excitment/Surprise',data: [], color:'green'},
                   ]
     });
 
@@ -213,9 +217,6 @@ $(document).ready(function() {
             text: 'Video module',
             x: -80
         },
-        subtitle: {
-            text: '<a href="https://en.wikipedia.org/wiki/World_population">More info</a>'
-        },
         pane: {
             size: '80%'
         },
@@ -269,9 +270,6 @@ $(document).ready(function() {
             text: 'Audio module',
             x: -80
         },
-        subtitle: {
-            text: ' <a href="https://en.wikipedia.org/wiki/World_population">More info</a>'
-        },
         pane: {
             size: '80%'
         },
@@ -323,9 +321,6 @@ $(document).ready(function() {
         title: {
             text: 'Text module',
             x: -80
-        },
-        subtitle: {
-            text: '<a href="https://en.wikipedia.org/wiki/World_population">More info</a>'
         },
         pane: {
             size: '80%'

@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Multimodal emotion recognition - Dashboard</title>
+  <title>Multimodal emotion recognition - Text</title>
 
   <!-- Bootstrap -->
   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
@@ -34,8 +34,8 @@
       <!-- Collect the nav links, forms, and other content for toggling -->
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
         <ul class="nav navbar-nav">
-          <li class="active">
-            <a href="#">Dashboard</a>
+          <li>
+            <a href= {{ url_for('renderHomePage') }} >Dashboard</a>
           </li>
           <li>
             <a href= {{ url_for('renderVideoPage') }} >Video Module</a>
@@ -43,7 +43,7 @@
           <li>
             <a href= {{ url_for('renderAudioPage') }} >Audio Module</a>
           </li>
-          <li>
+          <li class="active">
             <a href= {{ url_for('renderTextPage') }} >Text Module</a>
           </li>
         </ul>
