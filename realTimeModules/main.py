@@ -6,17 +6,12 @@ import sys
 import argparse
 from multiprocessing import Process, Queue
 
-
 import numpy as np
-
 from speech.speech import generateSpeechProbs, detectEmotionsSpeech
 from tone.tone import generateToneProbs, detectEmotionsTone
 from video.video import detectEmotionsVideo, generateVideoProbs
 from audioRecorder.audioRecorder import startAudioRecorder
 from videoRecorder.videoRecorder import startVideoRecorder
-
-#TODO: clamp weight values between 0 and 1
-# for testing
 
 def majorityVotedEmotion(videoProbs, toneProbs, speechProbs, weights = None):
     # None is used just to handle conditions at t = 0s
