@@ -27,6 +27,7 @@ picklesForInterface/
 
 # ignore test folders used for temporary files
 realTimeModules/audioRecorder/test
+realTimeModules/videoRecorder/test
 realTimeModules/tone/test
 realTimeModules/video/test
 realTimeModules/speech/test
