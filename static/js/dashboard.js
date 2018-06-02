@@ -10,12 +10,13 @@ function requestData() {
     $.ajax({
         url: '/live-data',
         success: function(point) {
-          //  console.log(point)
+            //console.log(point);
             var series = linePlot.series[0];
             shift = series.data.length > 200; // shift if the series is longer than 20
             
-            //format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs, videoAttrs, toneAttrs]
-            // size :  [    4                3           6       4           4              2       2       ]
+            
+            //format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs, videoAttrs, toneAttrs,  combinedEmotion]
+            // size :  [    4                3           6       4           4              2       2            1 ]
              //line plot
              linePlot.series[0].addPoint([time, point[0]], true);      
              linePlot.series[1].addPoint([time, point[1]], true);
@@ -39,8 +40,10 @@ function requestData() {
             text.series[0].setData([point[17], point[18], point[19], point[20]], true);
             
             time +=1;
+
+            var detEmotion = "Detected emotion: <strong>"+ point[26] + "</strong> <br><br><br><br><br>";
+            $('#detectedEmotionBox').html(detEmotion);
             
-            $('#detectedEmotionBox').html("Detected emotion: <strong>ASDASD</strong> <br><br><br><br><br>");
             // call it again after one second
             setTimeout(requestData, 1000);
         },

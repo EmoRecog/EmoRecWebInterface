@@ -226,11 +226,20 @@ def main():
         # correct display on console, fake display on web interface
         weights[2] *= 5
 
-        transmitArray = [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs,  videoAttrs, toneAttrs, speechAttrs] 
+        majorityEmotion = []
+        if emotion is None:
+            majorityEmotion = [9999]
+        else:
+            majorityEmotion = [emotions[emotion]]
+
+        transmitArray = [weightedAvgProbs, weights, videoProbs, 
+        toneProbs, speechProbs,  videoAttrs, toneAttrs, speechAttrs, majorityEmotion]
+        
         arrayGood = True
         for x in transmitArray:
             if x is None:
                 arrayGood = False
+
         if arrayGood:
             with open(os.path.join(PICKLES,'pickleFile'), 'wb') as fp:
                 pickle.dump(transmitArray, fp)

@@ -14,10 +14,9 @@ function requestData() {
             var series = linePlot.series[0];
             shift = series.data.length > 200; // shift if the series is longer than 20
             
-            //format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs, videoAttrs, toneAttrs]
-            // size :  [    4                3           6       4           4              2       2       ]
-             
-            //TODO: confirm from Punekar about order of emotions
+            
+            //format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs, videoAttrs, toneAttrs,  combinedEmotion]
+            // size :  [    4                3           6       4           4              2       2            1 ]
             linePlot.series[0].addPoint([time, point[7]], true);      
             linePlot.series[1].addPoint([time, point[8]], true);
             linePlot.series[2].addPoint([time, point[9]], true);
