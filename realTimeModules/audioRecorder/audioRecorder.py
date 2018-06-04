@@ -124,7 +124,8 @@ def readMic(utteranceToneQ,utteranceSpeechQ, audioInputDevice):
         stream = p.open(format=FORMAT, channels=CHANNELS,rate=RATE,input_device_index=get_ip_device_index(p, DEVICE_IP_HW), input=True,
                         frames_per_buffer=CHUNK)
 
-        THRESHOLD = getThreshold(stream, RATE, CHUNK, BASELINE_SECONDS) +3000 # just to be safe
+        # THRESHOLD = getThreshold(stream, RATE, CHUNK, BASELINE_SECONDS) +3000 # just to be safe
+        THRESHOLD = 20000 # set for testing
         print("________________________________________")
         print("RECORDER -> Threshold : " + str(THRESHOLD))
         print("________________________________________")

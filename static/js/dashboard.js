@@ -40,7 +40,7 @@ function requestData() {
             
             time +=1;
             
-            $('#detectedEmotionBox').html("Detected emotion: <strong>ASDASD</strong> <br><br><br><br><br>");
+            $('#detectedEmotionBox').html("Detected emotion: <strong>Happiness/Excitement/Surprise</strong> <br><br><br><br><br>");
             // call it again after one second
             setTimeout(requestData, 1000);
         },
