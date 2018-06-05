@@ -40,8 +40,8 @@ function requestData() {
             text.series[0].setData([point[17], point[18], point[19], point[20]], true);
             
             time +=1;
-
-            var detEmotion = "Detected emotion: <strong>"+ point[26] + "</strong> <br><br><br><br><br>";
+            
+            var detEmotion = "Detected emotion: <strong>"+ getCombinedEmotion(point) +"</strong> <br><br><br><br><br>";
             $('#detectedEmotionBox').html(detEmotion);
             
             // call it again after one second
@@ -49,6 +49,28 @@ function requestData() {
         },
         cache: false
     });
+}
+
+function getCombinedEmotion(point) {
+    // 0 to 3:
+    var result = "";
+    var highest = Math.max(point[0], point[1], point[2], point[3]);
+    switch(highest) {
+        case point[0]:
+            return "Neutral";
+            break;
+        case point[1]:
+            return "Sadness/Fear";
+            break;
+        case point[2]:
+            return "Anger/Frustration/Disgust";
+            break;
+        case point[3]:
+            return "Happiness/Excitment/Surprise";
+            break;
+        default:
+            return "Error!";     
+    }
 }
 
 function refreshImage() {

@@ -226,14 +226,8 @@ def main():
         # correct display on console, fake display on web interface
         weights[2] *= 5
 
-        majorityEmotion = []
-        if emotion is None:
-            majorityEmotion = [9999]
-        else:
-            majorityEmotion = [emotions[emotion]]
-
         transmitArray = [weightedAvgProbs, weights, videoProbs, 
-        toneProbs, speechProbs,  videoAttrs, toneAttrs, speechAttrs, majorityEmotion]
+        toneProbs, speechProbs,  videoAttrs, toneAttrs, speechAttrs]
         
         arrayGood = True
         for x in transmitArray:
