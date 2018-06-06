@@ -65,12 +65,13 @@ def getVideoInput(s):
     except ValueError:
         return s
 
-def detectEmotionsVideo(videoProbQ, videoAttrQ, videoInput):
+def detectEmotionsVideo(videoProbQ, videoAttrQ, frameQ):
 
     #init root directory path
     ROOT_VIDEOMODULE = os.path.dirname(os.path.realpath(__file__))
 
-    WEBINTERFACE_VID_OUTPUT = os.path.join(os.path.dirname(os.path.dirname(ROOT_VIDEOMODULE)), 'static', 'video.png')
+    # TODO save face with landmarks
+    # WEBINTERFACE_VID_OUTPUT = os.path.join(os.path.dirname(os.path.dirname(ROOT_VIDEOMODULE)), 'static', 'video.png')
 
     # print("VIDEO -> videoInput : " + videoInput)
     emotions = ["anger","disgust", "happiness", "neutral", "sadness", "surprise"] #Emotion list
@@ -90,109 +91,99 @@ def detectEmotionsVideo(videoProbQ, videoAttrQ, videoInput):
     # emotion detector
     clf = joblib.load(ROOT_VIDEOMODULE + "/EmoRecogFacial.pkl")
     
-    skipframe=24
+    skipframe=48
     # try:
     #     skipframe = int(sys.argv[2])
     # except ValueError:
     #     pass
     
-    # video_capture = cv2.VideoCapture("/home/srp3003/CombiningProbs/" + videoInput)
-    video_capture = cv2.VideoCapture(2)
+    # try:
+    #     videoInput = int(videoInput)
+    # except ValueError:
+    #     pass
+
+    # video_capture = cv2.VideoCapture(videoInput)
 
     proc_frame = np.zeros((350,350,3), np.uint8)
+    
     counter = 0
     
 
     while(True):
-        counter += 1
-        ret, orig_frame = video_capture.read()
+        #ret, orig_frame = video_capture.read()
         
-        if ret == False:
-            break
+        orig_frame = frameQ.get()
         
-        if( counter % skipframe == 0):
-            
-            frame = orig_frame
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            
-            face = faceDet.detectMultiScale(frame, scaleFactor=1.1, minNeighbors=10, minSize=(5, 5), flags=cv2.CASCADE_SCALE_IMAGE)
-            face_two = faceDet_two.detectMultiScale(frame, scaleFactor=1.1, minNeighbors=10, minSize=(5, 5), flags=cv2.CASCADE_SCALE_IMAGE)
-            face_three = faceDet_three.detectMultiScale(frame, scaleFactor=1.1, minNeighbors=10, minSize=(5, 5), flags=cv2.CASCADE_SCALE_IMAGE)
-            face_four = faceDet_four.detectMultiScale(frame, scaleFactor=1.1, minNeighbors=10, minSize=(5, 5), flags=cv2.CASCADE_SCALE_IMAGE)
-            
-            if len(face) == 1:
-                facefeatures = face
-            elif len(face_two) == 1:
-                facefeatures = face_two
-            elif len(face_three) == 1:
-                facefeatures = face_three
-            elif len(face_four) == 1:
-                facefeatures = face_four
-            else:
-                facefeatures = ""
+        # if( counter % skipframe == 0):
+        frame = orig_frame
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        
+        face = faceDet.detectMultiScale(frame, scaleFactor=1.1, minNeighbors=10, minSize=(5, 5), flags=cv2.CASCADE_SCALE_IMAGE)
+        face_two = faceDet_two.detectMultiScale(frame, scaleFactor=1.1, minNeighbors=10, minSize=(5, 5), flags=cv2.CASCADE_SCALE_IMAGE)
+        face_three = faceDet_three.detectMultiScale(frame, scaleFactor=1.1, minNeighbors=10, minSize=(5, 5), flags=cv2.CASCADE_SCALE_IMAGE)
+        face_four = faceDet_four.detectMultiScale(frame, scaleFactor=1.1, minNeighbors=10, minSize=(5, 5), flags=cv2.CASCADE_SCALE_IMAGE)
+        
+        if len(face) == 1:
+            facefeatures = face
+        elif len(face_two) == 1:
+            facefeatures = face_two
+        elif len(face_three) == 1:
+            facefeatures = face_three
+        elif len(face_four) == 1:
+            facefeatures = face_four
+        else:
+            facefeatures = ""
 
-            for (x, y, w, h) in facefeatures: #get coordinates and size of rectangle containing face
-                frame = frame[y:y+h, x:x+w] #Cut the frame to size
-                #CHECK IF RESIZING IS NEEDED
-                try:
-                    frame = cv2.resize(frame, (350, 350)) #Resize face so all images have same size
-                except:
-                    pass #If error, pass file
+        for (x, y, w, h) in facefeatures: #get coordinates and size of rectangle containing face
+            frame = frame[y:y+h, x:x+w] #Cut the frame to size
+            #CHECK IF RESIZING IS NEEDED
+            try:
+                frame = cv2.resize(frame, (350, 350)) #Resize face so all images have same size
+            except:
+                pass #If error, pass file
 
 
-            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-            clahe_image = clahe.apply(frame)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+        clahe_image = clahe.apply(frame)
 
-            data = get_landmarks(clahe_image, detector, predictor)
+        data = get_landmarks(clahe_image, detector, predictor)
 
-            if data['landmarks_vectorised'] == "error":
-                print("VIDEO -> No face detected")
-            else:
-                pred = []
-                pred.append(data['landmarks_vectorised'])
-                npar = np.array(pred)
-                dist = clf.decision_function(npar)
-                result = emotions[clf.predict(npar)[0]]
-                prob = clf.predict_proba(npar) * 100
-                # print("dist : " + str(dist))
-                # print("VIDEO -> prob : " + str(prob) + "%")
-                # print("VIDEO -> frame : " + str(counter/skipframe) + ", emotion : " + result)
+        if data['landmarks_vectorised'] == "error":
+            print("VIDEO -> No face detected")
+        else:
+            pred = []
+            pred.append(data['landmarks_vectorised'])
+            npar = np.array(pred)
+            dist = clf.decision_function(npar)
+            result = emotions[clf.predict(npar)[0]]
+            prob = clf.predict_proba(npar) * 100
+            # print("dist : " + str(dist))
+            # print("VIDEO -> prob : " + str(prob) + "%")
+            # print("VIDEO -> frame : " + str(counter/skipframe) + ", emotion : " + result)
 
-                ''' 
-                Sending the data  to main process
-                ---------------------------------
-                '''
-                videoProbs = prob[0]
-                videoProbQ.put(videoProbs)
+            ''' 
+            Sending the data  to main process
+            ---------------------------------
+            '''
+            videoProbs = prob[0]
+            videoProbQ.put(videoProbs)
 
-                frameNo =counter/skipframe
-                emotionLabel = result
-                videoAttrs = [frameNo, emotionLabel]
-                videoAttrQ.put(videoAttrs)
-                '''
-                ----------------------------------
-                '''
+            frameNo =counter/skipframe
+            emotionLabel = result
+            videoAttrs = [frameNo, emotionLabel]
+            videoAttrQ.put(videoAttrs)
+            '''
+            ----------------------------------
+            '''
 
             proc_frame = frame
-            cv2.putText(proc_frame, "frame : "+str(counter/skipframe), (30,30), cv2.FONT_HERSHEY_PLAIN, 1.5, 255)
+            cv2.putText(proc_frame, "frame : "+str(counter), (30,30), cv2.FONT_HERSHEY_PLAIN, 1.5, 255)
             
-        # TODO: show these outputs in the webinterface  video module
-        cv2.imshow("original_feed", orig_frame) #Display the frame
-        
-        # saving output for dashboard display
-        resized_frame = cv2.resize(orig_frame, (200,150))
-        cv2.imwrite(WEBINTERFACE_VID_OUTPUT, resized_frame)
-    
-
         cv2.imshow("processed_feed", proc_frame)
         if cv2.waitKey(1) & 0xFF == ord('q'): #Exit program when the user presses 'q'
-            break        
+            break  
 
-        # TESTING asynchronous playback
-        # ret, image = video_capture.read()
-        # cv2.imshow("video", image)
-        # if (cv2.waitKey(1) & 0xFF == ord('q')):
-        #     break
+        counter += skipframe
+      
 
-# test   
-# detectEmotionsVideo(None, "videoplayback.mp4")
+        

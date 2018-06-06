@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Multimodal emotion recognition - Dashboard</title>
+  <title>Multimodal emotion recognition - Video</title>
 
   <!-- Bootstrap -->
   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
@@ -34,10 +34,10 @@
       <!-- Collect the nav links, forms, and other content for toggling -->
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
         <ul class="nav navbar-nav">
-          <li class="active">
-            <a href="#">Dashboard</a>
-          </li>
           <li>
+            <a href= {{ url_for('renderHomePage') }} >Dashboard</a>
+          </li>
+          <li class="active">
             <a href= {{ url_for('renderVideoPage') }} >Video Module</a>
           </li>
           <li>
@@ -57,47 +57,31 @@
 
   <div class="container-fluid">
     <div class="row">
-      <h1 class="bg-success">Combined probabilities <small>Combined output of 3 modules</small></h1>
+      <h1 class="bg-success">Video module probabilities <small>Detailed output of video module</small></h1>
     </div>
     <div class="row">
-      <div class="col-xs-4">
-        <div class="container-fluid" id="combinedLine"></div>
+      <div class="col-xs-6">
+        <div class="container-fluid" id="videoLine"></div>
       </div>
-      <div class="col-xs-4">
-          <div class="container-fluid" id="combinedSpider"></div>
-      </div>
-      <div class="col-xs-4">
-          <div class="container-fluid" id="weights"></div>
+      <div class="col-xs-6">
+          <div class="container-fluid" id="videoSpider"></div>
       </div>
     </div>
 
     <div class="row" id="videoDivRow">
-          <div class="col-xs-6">
+          <div class="col-xs-4">
             <img name="picture" src="/static/video.png">
           </div>
-          <div class="col-xs-6">
+          <div class="col-xs-4">
+            <img name="picture2" src="/static/video.png">
+          </div>
+          <div class="col-xs-4">
             <div class="alert alert-info" id="detectedEmotionBox">
                 <h4 class="alert-heading">Detected emotion:</h4>
                   <strong></strong> <br><br><br><br><br>
             </div>
           </div>
     </div>
-    
-    <div class="row">
-        <h1 class="bg-success">Individual module probabilities</h1>
-   </div>
-   
-   <div class = "row">
-    <div class="col-xs-4">
-      <div class="container-fluid" id="video"></div>
-    </div>
-    <div class="col-xs-4">
-      <div class="container-fluid" id="audio"></div>
-    </div>
-    <div class="col-xs-4">
-      <div class="container-fluid" id="text"></div>
-    </div>
-   </div>
     
   </div>
 
@@ -110,7 +94,7 @@
   <script src="http://code.highcharts.com/modules/exporting.js"></script>
 
     <!-- /custom scripts -->
-  <script src="/static/js/dashboard.js"></script>
+  <script src="/static/js/videoPage.js"></script>
 
   <!-- Latest compiled and minified JavaScript -->
   <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
