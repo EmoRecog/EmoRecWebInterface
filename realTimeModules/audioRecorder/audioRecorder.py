@@ -9,6 +9,8 @@ import time
 from .alsa_error import noalsaerr
 from .channel_index import get_ip_device_index
 
+import pickle
+
 def getThreshold(stream, RATE, CHUNK, BASELINE_SECONDS):
     maxChunks = []
     for i in range(0,int(RATE/CHUNK*BASELINE_SECONDS)):
@@ -111,9 +113,6 @@ def test():
     p.terminate()
 
 def readMic(utteranceToneQ,utteranceSpeechQ, audioInputDevice):
-    ROOT_AUDIORECORDERMODULE = os.path.dirname(os.path.realpath(__file__))
-    PICKLESDIR = os.path.join(os.path.dirname(os.path.dirname(ROOT_AUDIORECORDERMODULE)),'picklesForInterface')
-    WEBINTERFACE_AUD_OUTPUT =  os.path.join(PICKLESDIR, 'audioPickleFile')
     
     # setup 
     DEVICE_IP_HW = audioInputDevice # this usually is hw:2,0
@@ -213,6 +212,9 @@ def readWavFile(utteranceToneQ,utteranceSpeechQ, audioInputFile):
             # generate a 5 sec clip 
             for _ in range(int(RATE*UTTERANCE_SECONDS/CHUNK)):
                 samples = testWav.readframes(CHUNK) # should throw error
+                # for web interface
+                with open(WEBINTERFACE_AUD_OUTPUT, 'wb') as fp:
+                    pickle.dump(samples, fp)
                 if(len(samples)==0):
                     raise Exception("WAV FILE DONE")
                 utterance += samples
