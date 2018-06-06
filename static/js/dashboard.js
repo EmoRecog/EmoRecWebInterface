@@ -10,12 +10,13 @@ function requestData() {
     $.ajax({
         url: '/live-data',
         success: function(point) {
-          //  console.log(point)
+            //console.log(point);
             var series = linePlot.series[0];
             shift = series.data.length > 200; // shift if the series is longer than 20
             
-            //format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs, videoAttrs, toneAttrs]
-            // size :  [    4                3           6       4           4              2       2       ]
+            
+            //format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs, videoAttrs, toneAttrs,  combinedEmotion]
+            // size :  [    4                3           6       4           4              2       2            1 ]
              //line plot
              linePlot.series[0].addPoint([time, point[0]], true);      
              linePlot.series[1].addPoint([time, point[1]], true);
@@ -40,12 +41,38 @@ function requestData() {
             
             time +=1;
             
+            var detEmotion = "<h4 class=\"alert-heading\">Detected emotion:</h4> <strong>"+ getCombinedEmotion(point) +"</strong> <br><br><br><br><br>";
+            $('#detectedEmotionBox').html(detEmotion);
+            
             $('#detectedEmotionBox').html("Detected emotion: <strong>Happiness/Excitement/Surprise</strong> <br><br><br><br><br>");
+
             // call it again after one second
             setTimeout(requestData, 1000);
         },
         cache: false
     });
+}
+
+function getCombinedEmotion(point) {
+    // 0 to 3:
+    var result = "";
+    var highest = Math.max(point[0], point[1], point[2], point[3]);
+    switch(highest) {
+        case point[0]:
+            return "Neutral";
+            break;
+        case point[1]:
+            return "Sadness/Fear";
+            break;
+        case point[2]:
+            return "Anger/Frustration/Disgust";
+            break;
+        case point[3]:
+            return "Happiness/Excitment/Surprise";
+            break;
+        default:
+            return "Error!";     
+    }
 }
 
 function refreshImage() {

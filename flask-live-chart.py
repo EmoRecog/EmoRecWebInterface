@@ -6,8 +6,8 @@ import os
 import pickle
 
 #readFile = 'faceRecog/testfile'     #format : [a, d, h, n, sad, sur, frame]
-# //format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs, videoAttrs, toneAttrs]
-# // size :  [    4                3           6       4           4              2       2       ]
+# //format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs, videoAttrs, toneAttrs,  combinedEmotion]
+# // size :  [    4                3           6       4           4              2       2            1 ]
 
 app = Flask(__name__)
 ROOT_INTERFACE = os.path.dirname(os.path.realpath(__file__))
@@ -35,9 +35,9 @@ def live_data():
  
     with open(readFile, 'rb') as fp:
         pickeDump = pickle.load(fp)
-    receivedData = []
    
     #convert to single 1D array
+    receivedData = []
     for array in pickeDump:
         for element in array:
             receivedData.append(element)

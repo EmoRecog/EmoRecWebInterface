@@ -14,10 +14,9 @@ function requestData() {
             var series = linePlot.series[0];
             shift = series.data.length > 200; // shift if the series is longer than 20
             
-            //format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs, videoAttrs, toneAttrs]
-            // size :  [    4                3           6       4           4              2       2       ]
-             
-            //TODO: confirm from Punekar about order of emotions
+            
+            //format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs, videoAttrs, toneAttrs,  combinedEmotion]
+            // size :  [    4                3           6       4           4              2       2            1 ]
             linePlot.series[0].addPoint([time, point[7]], true);      
             linePlot.series[1].addPoint([time, point[8]], true);
             linePlot.series[2].addPoint([time, point[9]], true);
@@ -29,7 +28,9 @@ function requestData() {
 
             time +=1;
             
-            $('#detectedEmotionBox').html("Detected emotion: <strong>ASDASD</strong> <br><br><br><br><br>");
+            var detEmotion = "<h4 class=\"alert-heading\">Detected emotion:</h4> <strong>"+ getCombinedEmotion(point) +"</strong> <br><br><br><br><br>";
+            $('#detectedEmotionBox').html(detEmotion);
+
             // call it again after one second
             setTimeout(requestData, 1000);
         },
@@ -37,8 +38,38 @@ function requestData() {
     });
 }
 
+function getCombinedEmotion(point) {
+      // 7 to 12:
+      var result = "";
+      var highest = Math.max(point[7], point[8], point[9], point[10],
+                             point[11], point[12]);
+      switch(highest) {
+            case point[7]:
+                return "Anger";
+                break;
+            case point[8]:
+                return "Disgust";
+                break;
+            case point[9]:
+                return "Happiness";
+                break;
+            case point[10]:
+                return "Neutral";
+                break;
+            case point[11]:
+                return "Sad";
+                break;   
+            case point[12]:
+              return "Surprise";
+              break; 
+          default:
+              return "Error!";     
+      }
+}
+
 function refreshImage() {
     document.picture.src="/static/video.png?a=" +String(Math.random()*999);
+    document.picture2.src="/static/video.png?a=" +String(Math.random()*999);
     setTimeout('refreshImage()', 100);
 }
 
