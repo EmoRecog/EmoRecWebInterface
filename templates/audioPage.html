@@ -39,20 +39,30 @@
     </div>
   </div>
 
- 
-
   <div class="container-fluid">
     <div class="row">
       <h1 class="bg-success">Audio module probabilities <small>Detailed output of audio module</small></h1>
     </div>
     <div class="row">
       <div class="col-xs-6">
-        <div class="container-fluid" id="combinedLine"></div>
+        <div class="container-fluid" id="audioLine"></div>
       </div>
       <div class="col-xs-6">
-          <div class="container-fluid" id="combinedSpider"></div>
+          <div class="container-fluid" id="audioSpider"></div>
       </div>
     </div>
+
+    <div class="row" id="videoDivRow">
+          <div class="col-xs-6">
+            <img name="picture" src="/static/video.png">
+          </div>
+          <div class="col-xs-6">
+            <div class="alert alert-info" id="detectedEmotionBox">
+              Detected emotion: <strong></strong> <br><br><br><br><br>
+            </div>
+          </div>
+    </div>
+    
   </div>
 
   <hr>
@@ -64,7 +74,7 @@
   <script src="http://code.highcharts.com/modules/exporting.js"></script>
 
     <!-- /custom scripts -->
-  <script src="/static/js/dashboard.js"></script>
+  <script src="/static/js/audioPage.js"></script>
 
   <!-- Latest compiled and minified JavaScript -->
   <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
