@@ -44,6 +44,8 @@ function requestData() {
             var detEmotion = "<h4 class=\"alert-heading\">Detected emotion:</h4> <strong>"+ getCombinedEmotion(point) +"</strong> <br><br><br><br><br>";
             $('#detectedEmotionBox').html(detEmotion);
             
+            $('#detectedEmotionBox').html("Detected emotion: <strong>Happiness/Excitement/Surprise</strong> <br><br><br><br><br>");
+
             // call it again after one second
             setTimeout(requestData, 1000);
         },
