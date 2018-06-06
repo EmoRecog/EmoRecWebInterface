@@ -28,7 +28,7 @@ function requestData() {
     
             time +=1;
             
-            var detEmotion = "Detected emotion: <strong>"+ getCombinedEmotion(point) +"</strong> <br><br><br><br><br>";
+            var detEmotion = "<h4 class=\"alert-heading\">Detected emotion:</h4> <strong>"+ getCombinedEmotion(point) +"</strong> <br><br><br><br><br>";
             $('#detectedEmotionBox').html(detEmotion);
             
             // call it again after one second

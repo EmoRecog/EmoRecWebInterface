@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Multimodal emotion recognition - Text</title>
+  <title>Multimodal emotion recognition - Video</title>
 
   <!-- Bootstrap -->
   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
@@ -43,7 +43,7 @@
           <li>
             <a href= {{ url_for('renderAudioPage') }} >Audio Module</a>
           </li>
-          <li class="active">
+          <li  class="active">
             <a href= {{ url_for('renderTextPage') }} >Text Module</a>
           </li>
         </ul>
@@ -57,46 +57,29 @@
 
   <div class="container-fluid">
     <div class="row">
-      <h1 class="bg-success">Combined probabilities <small>Combined output of 3 modules</small></h1>
+      <h1 class="bg-success">Text module probabilities <small>Detailed output of text module</small></h1>
     </div>
     <div class="row">
-      <div class="col-xs-4">
-        <div class="container-fluid" id="combinedLine"></div>
+      <div class="col-xs-6">
+        <div class="container-fluid" id="textLine"></div>
       </div>
-      <div class="col-xs-4">
-          <div class="container-fluid" id="combinedSpider"></div>
-      </div>
-      <div class="col-xs-4">
-          <div class="container-fluid" id="weights"></div>
+      <div class="col-xs-6">
+          <div class="container-fluid" id="textSpider"></div>
       </div>
     </div>
 
     <div class="row" id="videoDivRow">
-          <div class="col-xs-6">
-            <img name="picture" src="/static/video.png">
+          <div class="col-xs-9">
+            <div class="alert alert-success" id="transcript">
+                <h4 class="alert-heading">Transcript:</h4>
+            </div>
           </div>
-          <div class="col-xs-6">
+          <div class="col-xs-3">
             <div class="alert alert-info" id="detectedEmotionBox">
-              Detected emotion: <strong></strong> <br><br><br><br><br>
+              <h4 class="alert-heading">Detected emotion:</h4>
             </div>
           </div>
     </div>
-    
-    <div class="row">
-        <h1 class="bg-success">Individual module probabilities</h1>
-   </div>
-   
-   <div class = "row">
-    <div class="col-xs-4">
-      <div class="container-fluid" id="video"></div>
-    </div>
-    <div class="col-xs-4">
-      <div class="container-fluid" id="audio"></div>
-    </div>
-    <div class="col-xs-4">
-      <div class="container-fluid" id="text"></div>
-    </div>
-   </div>
     
   </div>
 
@@ -109,7 +92,7 @@
   <script src="http://code.highcharts.com/modules/exporting.js"></script>
 
     <!-- /custom scripts -->
-  <script src="/static/js/dashboard.js"></script>
+  <script src="/static/js/textPage.js"></script>
 
   <!-- Latest compiled and minified JavaScript -->
   <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
