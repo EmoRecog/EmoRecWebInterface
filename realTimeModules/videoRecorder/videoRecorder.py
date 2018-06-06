@@ -5,7 +5,7 @@ import cv2
 import time
 import os
 
-import socket
+from socket import *
 import pickle
 import struct
 import numpy as np
@@ -59,76 +59,53 @@ def remoteStream(frameQ, videoInput):
     WEBINTERFACE_VID_OUTPUT = os.path.join(os.path.dirname(os.path.dirname(ROOT_VIDEORECORDERMODULE)), 'static', 'video.png')
     VIDEORECORDER_TESTDIR = os.path.join(ROOT_VIDEORECORDERMODULE, 'test')
     
-    videoInputIP = '0.0.0.0'
+    videoInputIP = '127.0.0.1'
     videoInputPort = int(videoInput['port'])
 
-    s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    print('VIDEO RECORDER -> Socket created')
-    print("VIDEO RECORDER -> Binding to IP : " + videoInputIP + ", Port : " + str(videoInputPort))
-
-    s.bind((videoInputIP,videoInputPort))
-    s.listen(5)
-
-    conn,addr=s.accept()
-    print("Connection from : " + str(conn))
-    print("client addr : " + str(addr))
-
+    skipframe = 10
     frameCounter = 0
 
     while True:     
-        data = ""
-        while True:
-            temp = conn.recv(4096)
-            data += str(temp)
-            if("END" in data):
+        s = socket(AF_INET, SOCK_DGRAM)
+        s.bind((videoInputIP, videoInputPort))
+        # print("VIDEO RECORDER -> SOCKET bind at {}:{}".format(videoInputIP,videoInputPort))
+        
+        f = open(os.path.join(VIDEORECORDER_TESTDIR,"streamImg.jpg"), "wb")
+        data, address = s.recvfrom(1024)
+        # print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+        # print("VIDEO RECORDER -> address : {}".format(address)) 
+        # print(data)
+        # print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+
+
+        try:
+            while(data):
+                f.write(data)
+                s.settimeout(0.05)
+                data, address = s.recvfrom(1024)
+                # print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+                # print("VIDEO RECORDER -> address : {}".format(address)) 
+                # print(data)
+                # print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+        except timeout:
+            f.close()
+            s.close()
+        
+        frame = cv2.imread(os.path.join(VIDEORECORDER_TESTDIR,"streamImg.jpg"))
+
+        if(frameCounter % skipframe == 0):
+            frameQ.put(frame)
+
+        # saving output for dashboard display
+        resized_frame = cv2.resize(frame, (200,150))
+        cv2.imwrite(WEBINTERFACE_VID_OUTPUT, resized_frame)
+
+        try:
+            cv2.imshow('stream',frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'): #Exit program when the user presses 'q'
                 break
-        
-        temp = data[:-4] # remove END
-        print(temp)
-
-        temp = temp.split(" ")[:-1]
-        frame = []
-        for x in temp:
-            if("b'" in x):
-                # x = x[2:]
-                x = x.decode("utf-8")
-            print(x)    
-            frame.append(int(x))
-
-
-        print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-        print(frame)
-        print(len(frame))
-        print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-
-        frame = np.fromstring(frame, dtype=np.uint8, sep = " ").reshape(480,640,3)
-        
-        # data = b""
-        # payload_size = struct.calcsize("I") 
-        # while True:
-        #     while len(data) < payload_size:
-        #         data += conn.recv(4096)
-        #     packed_msg_size = data[:payload_size]
-        #     data = data[payload_size:]
-        #     msg_size = struct.unpack("I", packed_msg_size)[0]
-        #     while len(data) < msg_size:
-        #         data += conn.recv(4096)
-        #     frame_data = data[:msg_size]
-        #     data = data[msg_size:]
-        #     ###
-
-        # frame=pickle.loads(frame_data,encoding='bytes')
-        # print(frame)
-        
-        
-        
-        # frameQ.put(frame)
-
-        # cv2.imwrite(VIDEORECORDER_TESTDIR+"/stream.png",frame)
-        
-        cv2.imshow('stream',frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'): #Exit program when the user presses 'q'
-            break  
+        except : 
+            pass  
         
         frameCounter += 1
 
