@@ -10,7 +10,7 @@ function requestData() {
     $.ajax({
         url: '/live-data',
         success: function(point) {
-            //console.log(point);
+            console.log(point);
             var series = linePlot.series[0];
             shift = series.data.length > 200; // shift if the series is longer than 20
             

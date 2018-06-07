@@ -27,19 +27,39 @@ def generateVideoProbs(videoProbQ):
         time.sleep(3)
 
 def get_landmarks(image, detector, predictor):
+    ROOT_VIDEOMODULE = os.path.dirname(os.path.realpath(__file__))
+    WEBINTERFACE_LANDMARKS_OUTPUT = os.path.join(os.path.dirname(os.path.dirname(ROOT_VIDEOMODULE)), 'static', 'landmarks.png')
+       
+    interfaceLandmarks = np.zeros((200,150,3),np.uint8)
+    interfaceImageSize = (200,150)
 
     data = {}
     detections = detector(image, 1)
+
+    interfaceLandmarks = image
+    interfaceLandmarks = cv2.cvtColor(interfaceLandmarks, cv2.COLOR_GRAY2BGR) 
+
     for k,d in enumerate(detections): #For all detected face instances individually
         shape = predictor(image, d) #Draw Facial Landmarks with the predictor class
         xlist = []
         ylist = []
         for i in range(1,68): #Store X and Y coordinates in two lists
+                     
+            cv2.circle(interfaceLandmarks, (int(shape.part(i).x), int(shape.part(i).y)), 1, (0,0,255), thickness=2) 
+            #For each point, draw a red circle with thickness2 on the original frame            
             xlist.append(float(shape.part(i).x))
             ylist.append(float(shape.part(i).y))
             
         xmean = np.mean(xlist)
         ymean = np.mean(ylist)
+
+        # plot mean
+        cv2.circle(interfaceLandmarks, (int(xmean), int(ymean)),1,(0,255,0), thickness=4)
+        # save face for interface, if detected
+        interfaceLandmarks = cv2.resize(interfaceLandmarks, interfaceImageSize)
+        cv2.imwrite(WEBINTERFACE_LANDMARKS_OUTPUT, interfaceLandmarks)
+
+
         xcentral = [(x-xmean) for x in xlist]
         ycentral = [(y-ymean) for y in ylist]
 
@@ -69,6 +89,18 @@ def detectEmotionsVideo(videoProbQ, videoAttrQ, frameQ):
 
     #init root directory path
     ROOT_VIDEOMODULE = os.path.dirname(os.path.realpath(__file__))
+    WEBINTERFACE_FACE_OUTPUT = os.path.join(os.path.dirname(os.path.dirname(ROOT_VIDEOMODULE)), 'static', 'face.png')
+    WEBINTERFACE_LANDMARKS_OUTPUT = os.path.join(os.path.dirname(os.path.dirname(ROOT_VIDEOMODULE)), 'static', 'landmarks.png')
+       
+    interfaceLandmarks = np.zeros((200,150,3),np.uint8)
+    interfaceFace = np.zeros((200,150,3), np.uint8)
+    interfaceImageSize = (200,150)
+
+
+    # save defaults for interface
+    cv2.imwrite(WEBINTERFACE_FACE_OUTPUT, interfaceFace)
+    cv2.imwrite(WEBINTERFACE_LANDMARKS_OUTPUT, interfaceLandmarks)
+
 
     # TODO save face with landmarks
     # WEBINTERFACE_VID_OUTPUT = os.path.join(os.path.dirname(os.path.dirname(ROOT_VIDEOMODULE)), 'static', 'video.png')
@@ -105,7 +137,7 @@ def detectEmotionsVideo(videoProbQ, videoAttrQ, frameQ):
     # video_capture = cv2.VideoCapture(videoInput)
 
     proc_frame = np.zeros((350,350,3), np.uint8)
-    
+
     counter = 0
     
 
@@ -146,8 +178,13 @@ def detectEmotionsVideo(videoProbQ, videoAttrQ, frameQ):
         clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
         clahe_image = clahe.apply(frame)
 
-        data = get_landmarks(clahe_image, detector, predictor)
+        # save face for interface, if detected
+        interfaceFace = cv2.resize(clahe_image, interfaceImageSize)
+        cv2.imwrite(WEBINTERFACE_FACE_OUTPUT, interfaceFace)
 
+        # this method will generate interfaceLandmarks and interfaceVector
+        data = get_landmarks(clahe_image, detector, predictor)
+             
         if data['landmarks_vectorised'] == "error":
             print("VIDEO -> No face detected")
         else:

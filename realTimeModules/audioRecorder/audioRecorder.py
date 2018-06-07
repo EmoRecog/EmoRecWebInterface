@@ -9,6 +9,8 @@ import time
 from .alsa_error import noalsaerr
 from .channel_index import get_ip_device_index
 
+import pickle
+
 def getThreshold(stream, RATE, CHUNK, BASELINE_SECONDS):
     maxChunks = []
     for i in range(0,int(RATE/CHUNK*BASELINE_SECONDS)):
@@ -31,6 +33,10 @@ def isSilent(audioChunk, THRESHOLD):
     return np.max(audioChunk) < THRESHOLD
 
 def getUtterance(stream, RATE, CHUNK, THRESHOLD, CHECK_SILENCE_SECONDS, RECORD_SECONDS):
+    ROOT_AUDIORECORDERMODULE = os.path.dirname(os.path.realpath(__file__))
+    PICKLESDIR = os.path.join(os.path.dirname(os.path.dirname(ROOT_AUDIORECORDERMODULE)),'picklesForInterface')
+    WEBINTERFACE_AUD_OUTPUT =  os.path.join(PICKLESDIR, 'audioPickleFile')
+    
     # record audio of CHECK_SILENCE_SECONDS
     utteranceData = b''    
     count = 0 # keep track of 1-sec clips added to the utterance
@@ -38,6 +44,9 @@ def getUtterance(stream, RATE, CHUNK, THRESHOLD, CHECK_SILENCE_SECONDS, RECORD_S
         checkData = b''
         for _ in range(int(RATE*CHECK_SILENCE_SECONDS/CHUNK)):
             streamData = stream.read(CHUNK)
+            # for web interface
+            with open(WEBINTERFACE_AUD_OUTPUT, 'wb') as fp:
+                pickle.dump(streamData, fp)
             checkData += streamData
         
         if(isSilent(checkData, THRESHOLD)):
@@ -104,6 +113,7 @@ def test():
     p.terminate()
 
 def readMic(utteranceToneQ,utteranceSpeechQ, audioInputDevice):
+    
     # setup 
     DEVICE_IP_HW = audioInputDevice # this usually is hw:2,0
     # DEVICE_IP_HW = audioInput
@@ -124,7 +134,8 @@ def readMic(utteranceToneQ,utteranceSpeechQ, audioInputDevice):
         stream = p.open(format=FORMAT, channels=CHANNELS,rate=RATE,input_device_index=get_ip_device_index(p, DEVICE_IP_HW), input=True,
                         frames_per_buffer=CHUNK)
 
-        THRESHOLD = getThreshold(stream, RATE, CHUNK, BASELINE_SECONDS) +3000 # just to be safe
+        # THRESHOLD = getThreshold(stream, RATE, CHUNK, BASELINE_SECONDS) +3000 # just to be safe
+        THRESHOLD = 20000 # set for testing
         print("________________________________________")
         print("RECORDER -> Threshold : " + str(THRESHOLD))
         print("________________________________________")
@@ -157,7 +168,13 @@ def readWavFile(utteranceToneQ,utteranceSpeechQ, audioInputFile):
     '''
     this reads 5 sec utterances from a file (THRESHOLD isn't used), 
     and passes on this utterances with 5 sec delay
-    '''    
+    '''
+
+    ROOT_AUDIORECORDERMODULE = os.path.dirname(os.path.realpath(__file__))
+    PICKLESDIR = os.path.join(os.path.dirname(os.path.dirname(ROOT_AUDIORECORDERMODULE)),'picklesForInterface')
+    WEBINTERFACE_AUD_OUTPUT =  os.path.join(PICKLESDIR, 'audioPickleFile')
+
+
     OUTPUT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test")
    
     # default parameters
@@ -195,6 +212,9 @@ def readWavFile(utteranceToneQ,utteranceSpeechQ, audioInputFile):
             # generate a 5 sec clip 
             for _ in range(int(RATE*UTTERANCE_SECONDS/CHUNK)):
                 samples = testWav.readframes(CHUNK) # should throw error
+                # for web interface
+                with open(WEBINTERFACE_AUD_OUTPUT, 'wb') as fp:
+                    pickle.dump(samples, fp)
                 if(len(samples)==0):
                     raise Exception("WAV FILE DONE")
                 utterance += samples
