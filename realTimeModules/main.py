@@ -76,6 +76,7 @@ def main():
     parser.add_argument("--file","-f",help="name of the file, in testVideos")
     parser.add_argument("--camera","-c",help="index of camera device")
     parser.add_argument("--mic", "-m", help="name of the mic device")
+    parser.add_argument("--port", "-p", help="stream port")
     parser.add_argument_group()
 
     if(len(sys.argv)<2):
@@ -102,6 +103,13 @@ def main():
         else:
             print("Input mic and camera!")
 
+    if(args.port):
+        print("PORT : " + args.port)
+        videoInput = {'input':'stream', 'port':args.port}
+        videoRecorderProcess = Process(target=startVideoRecorder, args=(frameQ, videoInput))
+        # testing
+        audioInput = {'input':'mic', 'device':'USB'}
+        audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceToneQ, utteranceSpeechQ,  audioInput))
 
     # videoProcess = Process(target=generateVideoProbs, args=(videoProbQ,))
     # speechProcess = Process(target=generateSpeechProbs, args=(speechProbQ,))
@@ -214,13 +222,14 @@ def main():
         print("\n")
         
         # comparison data
+        '''
         print("**********************************")
         print("VIDEO_EMOTION : " + str(np.argmax(combinedVideoProbs)))
         print("TONE_EMOTION : " + str(np.argmax(toneProbs)))
         print("SPEECH_EMOTION : " + str(np.argmax(speechProbs)))
         print("MAJORITY_EMOTION : " + str(np.argmax(weightedAvgProbs)))
         print("**********************************")
-        
+        '''
 
         # covering for the hack written in speech weight update
         # correct display on console, fake display on web interface
