@@ -57,6 +57,7 @@ def main():
     videoWeight = 0
     toneWeight = 0
     speechWeight = 0
+    SPEECH_WEIGHT = 0
 
     videoProbQ = Queue()
     toneProbQ = Queue()
@@ -111,7 +112,7 @@ def main():
         audioInput = {'input':'mic', 'device':'USB'}
         audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceToneQ, utteranceSpeechQ,  audioInput))
 
-    # videoProcess = Process(target=generateVideoProbs, args=(videoProbQ,))
+    # videoProcess = Process(target=generateViSPEECH_WEIGHTdeoProbs, args=(videoProbQ,))
     # speechProcess = Process(target=generateSpeechProbs, args=(speechProbQ,))
     # toneProcess = Process(target=generateToneProbs, args=(toneProbQ,))
 
@@ -181,14 +182,16 @@ def main():
             speechProbs = speechProbQ.get(block=False)
             speechProbUpdate = True
             # speechWeight = 1.0
-            speechWeight = 0.2
             speechAttrs = speechAttrQ.get()
+            speechWeight = speechAttrs[2]
+            SPEECH_WEIGHT = speechAttrs[2]
+
         except queue.Empty:
             speechProbUpdate = False
             # if speechWeight >= 0.2:
             #     speechWeight -= 0.2
-            if speechWeight >= 0.04:
-                speechWeight -= 0.04
+            if speechWeight >= (1.0/25.0)*SPEECH_WEIGHT:
+                speechWeight -= (1.0/25.0)*SPEECH_WEIGHT
 
         # majority voting
         weights = [videoWeight, toneWeight, speechWeight]
@@ -222,17 +225,18 @@ def main():
         print("\n")
         
         # comparison data
+        '''
         print("**********************************")
         print("VIDEO_EMOTION : " + str(np.argmax(combinedVideoProbs)))
         print("TONE_EMOTION : " + str(np.argmax(toneProbs)))
         print("SPEECH_EMOTION : " + str(np.argmax(speechProbs)))
         print("MAJORITY_EMOTION : " + str(np.argmax(weightedAvgProbs)))
         print("**********************************")
-        
+        '''
 
         # covering for the hack written in speech weight update
         # correct display on console, fake display on web interface
-        weights[2] *= 5
+        # weights[2] *= 5
 
         transmitArray = [weightedAvgProbs, weights, videoProbs, 
         toneProbs, speechProbs,  videoAttrs, toneAttrs, speechAttrs]
