@@ -39,6 +39,7 @@ testVideos/
 static/video.png
 static/face.png
 static/landmarks.png
+static/plot.png
 
 # ADD THE API KEY
 realTimeModules/speech/api_key.json

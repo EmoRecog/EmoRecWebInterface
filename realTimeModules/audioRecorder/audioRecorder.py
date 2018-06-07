@@ -10,6 +10,23 @@ from .alsa_error import noalsaerr
 from .channel_index import get_ip_device_index
 
 import pickle
+import pylab
+
+def soundPlot(data):
+    ROOT_AUDIORECORDERMODULE = os.path.dirname(os.path.realpath(__file__))
+    ASSETSDIR = os.path.join(os.path.dirname(os.path.dirname(ROOT_AUDIORECORDERMODULE)),'static')
+    WEBINTERFACE_AUD_PLOT = os.path.join(ASSETSDIR, 'plot.png')
+
+    # print("SOUND PLOT -> path : " + WEBINTERFACE_AUD_PLOT)
+
+    # print("SOUND PLOT -> data : {}".format(data))
+    data = np.fromstring(data, dtype=np.int16)
+    pylab.plot(data)
+    # pylab.title(i)
+    pylab.grid()
+    pylab.axis([0,len(data),-2**16/2, 2**16/2])
+    pylab.savefig(WEBINTERFACE_AUD_PLOT, dpi=50)
+    pylab.close("all")
 
 def getThreshold(stream, RATE, CHUNK, BASELINE_SECONDS):
     maxChunks = []
@@ -33,10 +50,6 @@ def isSilent(audioChunk, THRESHOLD):
     return np.max(audioChunk) < THRESHOLD
 
 def getUtterance(stream, RATE, CHUNK, THRESHOLD, CHECK_SILENCE_SECONDS, RECORD_SECONDS):
-    ROOT_AUDIORECORDERMODULE = os.path.dirname(os.path.realpath(__file__))
-    PICKLESDIR = os.path.join(os.path.dirname(os.path.dirname(ROOT_AUDIORECORDERMODULE)),'picklesForInterface')
-    WEBINTERFACE_AUD_OUTPUT =  os.path.join(PICKLESDIR, 'audioPickleFile')
-    
     # record audio of CHECK_SILENCE_SECONDS
     utteranceData = b''    
     count = 0 # keep track of 1-sec clips added to the utterance
@@ -44,9 +57,8 @@ def getUtterance(stream, RATE, CHUNK, THRESHOLD, CHECK_SILENCE_SECONDS, RECORD_S
         checkData = b''
         for _ in range(int(RATE*CHECK_SILENCE_SECONDS/CHUNK)):
             streamData = stream.read(CHUNK)
-            # for web interface
-            with open(WEBINTERFACE_AUD_OUTPUT, 'wb') as fp:
-                pickle.dump(streamData, fp)
+            # # for web interface
+            soundPlot(streamData)
             checkData += streamData
         
         if(isSilent(checkData, THRESHOLD)):
@@ -212,9 +224,7 @@ def readWavFile(utteranceToneQ,utteranceSpeechQ, audioInputFile):
             # generate a 5 sec clip 
             for _ in range(int(RATE*UTTERANCE_SECONDS/CHUNK)):
                 samples = testWav.readframes(CHUNK) # should throw error
-                # for web interface
-                with open(WEBINTERFACE_AUD_OUTPUT, 'wb') as fp:
-                    pickle.dump(samples, fp)
+                soundPlot(samples)
                 if(len(samples)==0):
                     raise Exception("WAV FILE DONE")
                 utterance += samples
