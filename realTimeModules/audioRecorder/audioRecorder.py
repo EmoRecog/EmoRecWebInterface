@@ -247,7 +247,7 @@ def readWavFile(utteranceToneQ,utteranceSpeechQ, audioInputFile):
             utteranceCount += 1
             
             # make processing sync with real time, deliberate delay of 5 seconds
-            time.sleep(5)
+            time.sleep(5.2)
 
         # except Queue.Full:
         #     print("QUEUE ERROR")
