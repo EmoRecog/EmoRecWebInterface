@@ -1,4 +1,4 @@
-var linePlot, spiderPlot;
+var linePlot, spiderPlot, utterancePlot;
 var time = 0;
 /**
  * Request data from the server, add it to the graph and set a timeout
@@ -26,6 +26,12 @@ function requestData() {
             //spider plot
             spiderPlot.series[0].setData([point[13], point[14], point[15], point[16]],true);
     
+            //utterance plot 
+            var i;
+            // for(i = 27; i < point.length; i++) {
+            //     utterancePlot.series[0].addPoint([i - 27], point[i], true);
+            // }
+
             time +=1;
             
             var detEmotion = "<h4 class=\"alert-heading\">Detected emotion:</h4> <strong>"+ getCombinedEmotion(point) +"</strong> <br><br><br><br><br>";
@@ -60,13 +66,8 @@ function getCombinedEmotion(point) {
     }
 }
 
-function refreshImage() {
-    document.picture.src="/static/video.png?a=" +String(Math.random()*999);
-    setTimeout('refreshImage()', 100);
-}
-
 $(document).ready(function() {
-    refreshImage();
+
     linePlot = new Highcharts.Chart({
         chart: {
             renderTo: 'audioLine',
@@ -162,5 +163,42 @@ $(document).ready(function() {
             pointPlacement: 'on'
         }]
     
-    });  
+    });
+    
+    utterancePlot = new Highcharts.Chart({
+        chart: {
+            renderTo: 'utterancePlot',
+            defaultSeriesType: 'spline',
+            zoomType: 'xy',
+            panning: true,
+            events: {
+                load: requestData
+            }
+        },
+        
+        title: {
+            text: 'Utterances'
+        },
+        xAxis: {
+          //  tickPixelInterval: 150,
+          //  maxZoom: 20 * 1000
+          minPadding: 0.2,
+            maxPadding: 0.2,
+            title: {
+                text: 'XXXXXXXXXXXXXXXXXXXXXXXXXXX',
+            }
+        },
+        yAxis: {
+            minPadding: 0.2,
+            maxPadding: 0.2,
+            min : 0,
+            max : 100,
+            title: {
+                text: 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY',
+            }
+        },
+           // format:
+            //[a, d, h, n, sad, sur, frame]
+        series: [ { name: '%%%%%',data: [], color:'cyan'  } ]
+    });
 });
