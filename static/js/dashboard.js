@@ -10,7 +10,7 @@ function requestData() {
     $.ajax({
         url: '/live-data',
         success: function(point) {
-            //console.log(point);
+            console.log(point);
             var series = linePlot.series[0];
             shift = series.data.length > 200; // shift if the series is longer than 20
             
@@ -44,8 +44,6 @@ function requestData() {
             var detEmotion = "<h4 class=\"alert-heading\">Detected emotion:</h4> <strong>"+ getCombinedEmotion(point) +"</strong> <br><br><br><br><br>";
             $('#detectedEmotionBox').html(detEmotion);
             
-            $('#detectedEmotionBox').html("Detected emotion: <strong>Happiness/Excitement/Surprise</strong> <br><br><br><br><br>");
-
             // call it again after one second
             setTimeout(requestData, 1000);
         },
