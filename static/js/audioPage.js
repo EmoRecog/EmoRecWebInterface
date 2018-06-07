@@ -27,7 +27,7 @@ function requestData() {
             spiderPlot.series[0].setData([point[13], point[14], point[15], point[16]],true);
     
             //utterance plot 
-            var i;
+            // var i;
             // for(i = 27; i < point.length; i++) {
             //     utterancePlot.series[0].addPoint([i - 27], point[i], true);
             // }
