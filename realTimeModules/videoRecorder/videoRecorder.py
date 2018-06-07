@@ -59,7 +59,8 @@ def remoteStream(frameQ, videoInput):
     WEBINTERFACE_VID_OUTPUT = os.path.join(os.path.dirname(os.path.dirname(ROOT_VIDEORECORDERMODULE)), 'static', 'video.png')
     VIDEORECORDER_TESTDIR = os.path.join(ROOT_VIDEORECORDERMODULE, 'test')
     
-    videoInputIP = '127.0.0.1'
+    # videoInputIP = '127.0.0.1'
+    videoInputIP = '0.0.0.0'
     videoInputPort = int(videoInput['port'])
 
     skipframe = 10
