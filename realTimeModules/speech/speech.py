@@ -7,6 +7,7 @@ import queue
 import threading
 import time
 from multiprocessing import Lock
+import time
 
 import numpy as np
 from google.cloud import speech
@@ -100,7 +101,14 @@ def loadClassifier():
     else:
         classifier = train()
 
-    return classifier
+    return classifier # tempTranscript = []
+            # for t in transcript:
+            #     if (time.time()-t[1] < 25.0):
+            #         tempTranscript.append(t)            
+            # transcript = tempTranscript
+
+def getWeight(wordcount):
+	return 0.6 + 0.4 * min(1, 0.01 * 0.05 * wordcount * wordcount)
 
 
 def detectEmotionsSpeech(speechProbQ, speechAttrQ, utteranceSpeechQ):
@@ -115,11 +123,12 @@ def detectEmotionsSpeech(speechProbQ, speechAttrQ, utteranceSpeechQ):
     classifier = loadClassifier()
     lock = Lock()
     utteranceCount = 0
-    transcript = ''
+    transcript = []
 
     while(True):
         lock.acquire()
         try:
+            
             content = utteranceSpeechQ.get()
             print("SPEECH -> Recorded utterance audio " + str(utteranceCount), len(content))
             requests = (types.StreamingRecognizeRequest(audio_content=chunk) for chunk in [content])
@@ -128,21 +137,28 @@ def detectEmotionsSpeech(speechProbQ, speechAttrQ, utteranceSpeechQ):
             for response in responses:
                 for result in response.results:
                     for alternative in result.alternatives:
-                        transcript += " " + alternative.transcript
+                        transcript.append((alternative.transcript, time.time()))
+
+            transcript = [t for t in transcript if ((time.time() - t[1]) < 25.0) ]
+            # tempTranscript = []
+            # for t in transcript:
+            #     if (time.time()-t[1] < 25.0):
+            #         tempTranscript.append(t)            
+            # transcript = tempTranscript
 
             # if no transcript is received, continue with old paragraph (with previous transcripts) until paragraph is flushed
             if(transcript):
-                emoProbs = classifier.predict_proba([transcript])[0]
-                speechAttrs = [ transcript, target_names[np.argmax(emoProbs)] ] 
+                emoProbs = classifier.predict_proba([' '.join([t[0] for t in transcript])])[0]
+                speechAttrs = [ ' '.join([t[0] for t in transcript]), target_names[np.argmax(emoProbs)], getWeight(len(' '.join([t[0] for t in transcript]).split(' '))) ] 
                 
                 speechAttrQ.put(speechAttrs)
                 speechProbQ.put(emoProbs*100)
                 
                 
-            utteranceCount+=1
+            #utteranceCount+=1
             # flush out the paragraph after every 6 utterances
-            if(utteranceCount % 6 == 0):
-                transcript = ''
+            #if(utteranceCount % 6 == 0):
+            #    transcript = ''
 
         except queue.Full:
             pass

@@ -68,8 +68,8 @@ function getCombinedEmotion(point) {
 }
 
 function refreshImage() {
-    document.picture.src="/static/video.png?a=" +String(Math.random()*999);
-    document.picture2.src="/static/video.png?a=" +String(Math.random()*999);
+    document.picture.src="/static/face.png?a=" +String(Math.random()*999);
+    document.picture2.src="/static/landmarks.png?a=" +String(Math.random()*999);
     setTimeout('refreshImage()', 100);
 }
 
@@ -170,8 +170,6 @@ $(document).ready(function() {
             name: 'Probability of emotion',
             data: [],
             pointPlacement: 'on'
-        }]
-    
-    });
-    
+        }]    
+    });    
 });
