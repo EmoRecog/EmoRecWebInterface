@@ -46,8 +46,8 @@ def live_data():
         for element in array:
             receivedData.append(element)
     
-    for i in audioDump:
-        receivedData.append(i)
+    # for i in audioDump:
+    #     receivedData.append(i)
 
     response = make_response(json.dumps(receivedData))
     response.content_type = 'application/json'
