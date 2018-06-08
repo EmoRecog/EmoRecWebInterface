@@ -25,14 +25,21 @@ picklesForInterface/
 
 .directory
 
-# ignore test folders
+# ignore test folders used for temporary files
 realTimeModules/audioRecorder/test
+realTimeModules/videoRecorder/test
 realTimeModules/tone/test
 realTimeModules/video/test
 realTimeModules/speech/test
 
+# ignore the folder containing test videos
+testVideos/
+
 # ignore the image container for video on the dashboard
 static/video.png
+static/face.png
+static/landmarks.png
+static/plot.png
 
 # ADD THE API KEY
 realTimeModules/speech/api_key.json

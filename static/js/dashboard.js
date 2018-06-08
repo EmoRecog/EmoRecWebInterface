@@ -10,12 +10,13 @@ function requestData() {
     $.ajax({
         url: '/live-data',
         success: function(point) {
-        //    console.log(point)
-            var series = linePlot.series[0],
+            // console.log(point);
+            var series = linePlot.series[0];
             shift = series.data.length > 200; // shift if the series is longer than 20
             
-            //format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs, videoAttrs, toneAttrs]
-            // size :  [    4                3           6       4           4              2       2       ]
+            
+            //format : [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs, videoAttrs, toneAttrs,  combinedEmotion]
+            // size :  [    4                3           6       4           4              2       2            1 ]
              //line plot
              linePlot.series[0].addPoint([time, point[0]], true);      
              linePlot.series[1].addPoint([time, point[1]], true);
@@ -24,21 +25,25 @@ function requestData() {
         
             
             //spider plot
-            spiderPlot.series[0].setData([point[0], point[1], point[2], point[3]],true)
+            spiderPlot.series[0].setData([point[0], point[1], point[2], point[3]],true);
     
             //weights plot
-            weights.series[0].setData([point[4], point[5], point[6]], true)
+            weights.series[0].setData([point[4], point[5], point[6]], true);
 
             //video plot
-            video.series[0].setData([point[7], point[8], point[9], point[10], point[11], point[12]], true)
+            video.series[0].setData([point[7], point[8], point[9], point[10], point[11], point[12]], true);
 
             //audio plot
-            audio.series[0].setData([point[13], point[14], point[15], point[16]], true)
+            audio.series[0].setData([point[13], point[14], point[15], point[16]], true);
 
             //text plot
-            text.series[0].setData([point[17], point[18], point[19], point[20]], true)
+            text.series[0].setData([point[17], point[18], point[19], point[20]], true);
             
             time +=1;
+            
+            var detEmotion = "<h4 class=\"alert-heading\">Detected emotion:</h4> <strong>"+ getCombinedEmotion(point) +"</strong> <br><br><br><br><br>";
+            $('#detectedEmotionBox').html(detEmotion);
+            
             // call it again after one second
             setTimeout(requestData, 1000);
         },
@@ -46,13 +51,35 @@ function requestData() {
     });
 }
 
+function getCombinedEmotion(point) {
+    // 0 to 3:
+    var result = "";
+    var highest = Math.max(point[0], point[1], point[2], point[3]);
+    switch(highest) {
+        case point[0]:
+            return "Neutral";
+            break;
+        case point[1]:
+            return "Sadness/Fear";
+            break;
+        case point[2]:
+            return "Anger/Frustration/Disgust";
+            break;
+        case point[3]:
+            return "Happiness/Excitment/Surprise";
+            break;
+        default:
+            return "Error!";     
+    }
+}
+
 function refreshImage() {
     document.picture.src="/static/video.png?a=" +String(Math.random()*999);
-    setTimeout('refreshImage()', 100)
+    setTimeout('refreshImage()', 100);
 }
 
 $(document).ready(function() {
-    refreshImage()
+    refreshImage();
     linePlot = new Highcharts.Chart({
         chart: {
             renderTo: 'combinedLine',
@@ -65,7 +92,7 @@ $(document).ready(function() {
         },
         tooltip:{
             formatter:function(){
-                return 'Frame: ' + this.key + ' Probability: ' + this.y;
+                return 'Second: ' + this.key + ' Probability: ' + this.y;
             }
         },
         title: {
@@ -91,8 +118,10 @@ $(document).ready(function() {
         },
            // format:
             //[a, d, h, n, sad, sur, frame]
-        series: [ { name: 'Neutral',data: [] },{ name: 'Sadness/Fear',data: [] },
-                  { name: 'Anger/Frustration/Disgust',data: [] },{ name: 'Happiness/Excitment/Surprise',data: [] },
+        series: [ { name: 'Neutral',data: [], color:'yellow'  },
+                  { name: 'Sadness/Fear',data: [], color:'black' },
+                  { name: 'Anger/Frustration/Disgust',data: [], color:'red' },
+                  { name: 'Happiness/Excitment/Surprise',data: [], color:'green'},
                   ]
     });
 
@@ -213,9 +242,6 @@ $(document).ready(function() {
             text: 'Video module',
             x: -80
         },
-        subtitle: {
-            text: '<a href="https://en.wikipedia.org/wiki/World_population">More info</a>'
-        },
         pane: {
             size: '80%'
         },
@@ -269,9 +295,6 @@ $(document).ready(function() {
             text: 'Audio module',
             x: -80
         },
-        subtitle: {
-            text: ' <a href="https://en.wikipedia.org/wiki/World_population">More info</a>'
-        },
         pane: {
             size: '80%'
         },
@@ -323,9 +346,6 @@ $(document).ready(function() {
         title: {
             text: 'Text module',
             x: -80
-        },
-        subtitle: {
-            text: '<a href="https://en.wikipedia.org/wiki/World_population">More info</a>'
         },
         pane: {
             size: '80%'

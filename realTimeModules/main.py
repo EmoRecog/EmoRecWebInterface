@@ -2,17 +2,16 @@ import os
 import pickle
 import queue  # multiprocessing.Queue borrows exceptions from Queue
 import time
+import sys
+import argparse
 from multiprocessing import Process, Queue
 
 import numpy as np
-
 from speech.speech import generateSpeechProbs, detectEmotionsSpeech
 from tone.tone import generateToneProbs, detectEmotionsTone
 from video.video import detectEmotionsVideo, generateVideoProbs
 from audioRecorder.audioRecorder import startAudioRecorder
-
-#TODO: clamp weight values between 0 and 1
-# for testing
+from videoRecorder.videoRecorder import startVideoRecorder
 
 def majorityVotedEmotion(videoProbs, toneProbs, speechProbs, weights = None):
     # None is used just to handle conditions at t = 0s
@@ -28,10 +27,28 @@ def majorityVotedEmotion(videoProbs, toneProbs, speechProbs, weights = None):
 
     return majorityVote, weightedAvgProbs
 
-def main():
+def checkArray(array, numberOfElements):
+    if array is None:
+        array = [0] * numberOfElements
+
+    # if (array is not None):
+    #     flag = 0
+    #     for x in array:
+    #         if x != 0:
+    #             flag = 1
+    #             break 
+    
+    return array
+
+
+def main():    
+    emotions = ['neu','sad_fea', 'ang_fru','hap_exc_sur']
+    
     #init paths
     ROOT_INTERFACE = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     ROOT_REALTIMEMODULES = os.path.dirname(os.path.realpath(__file__))
+    TESTVIDEOS_DIR = os.path.join(ROOT_INTERFACE, "testVideos")
+    
     VIDEO = os.path.join(ROOT_REALTIMEMODULES, "video")
     VIDEO_TEST = os.path.join(VIDEO,"test")
     TONE = os.path.join(ROOT_REALTIMEMODULES, "tone")
@@ -54,35 +71,80 @@ def main():
     videoWeight = 0
     toneWeight = 0
     speechWeight = 0
+    SPEECH_WEIGHT = 0
 
     videoProbQ = Queue()
     toneProbQ = Queue()
     speechProbQ = Queue()
+    
     utteranceToneQ = Queue()
     utteranceSpeechQ = Queue()
+    frameQ = Queue()
 
     videoAttrQ = Queue()
     toneAttrQ = Queue()
     speechAttrQ = Queue()
-    # Last 2 are for future use
 
-    # videoProcess = Process(target=generateVideoProbs, args=(videoProbQ,))
-    videoProcess = Process(target=detectEmotionsVideo, args=(videoProbQ, videoAttrQ,os.path.join(ROOT_REALTIMEMODULES, "video", "test","videoplayback.mp4")))
-    # toneProcess = Process(target=generateToneProbs, args=(toneProbQ,))
-    toneProcess = Process(target=detectEmotionsTone, args=(toneProbQ, toneAttrQ, utteranceToneQ))
+    
+    # parse the command line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--file","-f",help="name of the file, in testVideos")
+    parser.add_argument("--camera","-c",help="index of camera device")
+    parser.add_argument("--mic", "-m", help="name of the mic device")
+    parser.add_argument("--port", "-p", help="stream port")
+    parser.add_argument_group()
+
+    if(len(sys.argv)<2):
+        parser.print_usage()
+        sys.exit(1)
+
+    args = parser.parse_args()
+    
+    if(args.file):
+        print("FILE : " + args.file)
+        audioInput = {'input':'file', 'file':os.path.join(TESTVIDEOS_DIR, args.file+".mp4")}
+        videoInput = {'input':'file', 'file':os.path.join(TESTVIDEOS_DIR, args.file+".mp4")}
+        audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceToneQ, utteranceSpeechQ, audioInput))
+        videoRecorderProcess = Process(target=startVideoRecorder, args=(frameQ, videoInput))
+    
+    if(args.mic or args.camera):
+        if(args.mic and args.camera):
+            print("camera : " + args.camera)
+            print("Mic : " + args.mic)
+            audioInput = {'input':'mic','device':args.mic}
+            videoInput = {'input':'camera', 'device':args.camera}
+            audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceToneQ, utteranceSpeechQ,  audioInput))
+            videoRecorderProcess = Process(target=startVideoRecorder, args=(frameQ, videoInput))
+        else:
+            print("Input mic and camera!")
+
+    if(args.port):
+        print("PORT : " + args.port)
+        videoInput = {'input':'stream', 'port':args.port}
+        videoRecorderProcess = Process(target=startVideoRecorder, args=(frameQ, videoInput))
+        # testing
+        audioInput = {'input':'mic', 'device':'USB'}
+        audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceToneQ, utteranceSpeechQ,  audioInput))
+
+    # videoProcess = Process(target=generateViSPEECH_WEIGHTdeoProbs, args=(videoProbQ,))
     # speechProcess = Process(target=generateSpeechProbs, args=(speechProbQ,))
+    # toneProcess = Process(target=generateToneProbs, args=(toneProbQ,))
+
+    # TODO handle mp4 and avi
+    toneProcess = Process(target=detectEmotionsTone, args=(toneProbQ, toneAttrQ, utteranceToneQ))
     speechProcess = Process(target=detectEmotionsSpeech, args=(speechProbQ, speechAttrQ, utteranceSpeechQ))
-    audioRecorderProcess = Process(target=startAudioRecorder, args=(utteranceToneQ, utteranceSpeechQ))
+    videoProcess = Process(target=detectEmotionsVideo, args=(videoProbQ,videoAttrQ, frameQ))
 
     videoProcess.start()
     toneProcess.start()
     speechProcess.start()
     audioRecorderProcess.start()
+    videoRecorderProcess.start()
 
     #default values, each will return two values : [Frame/utterence/transcription , emotionLabel]
-    videoAttrs = 0
-    toneAttrs = 0
-    speechAttrs = 0
+    videoAttrs = None
+    toneAttrs = None
+    speechAttrs = None 
 
     counter = 0
     # use a scheduler here if you want the function call at specified time
@@ -134,16 +196,22 @@ def main():
             speechProbs = speechProbQ.get(block=False)
             speechProbUpdate = True
             # speechWeight = 1.0
-            speechWeight = 0.2
             speechAttrs = speechAttrQ.get()
+            speechWeight = speechAttrs[2]
+            SPEECH_WEIGHT = speechAttrs[2]
+
         except queue.Empty:
             speechProbUpdate = False
             # if speechWeight >= 0.2:
             #     speechWeight -= 0.2
-            if speechWeight >= 0.04:
-                speechWeight -= 0.04
+            if speechWeight >= (1.0/25.0)*SPEECH_WEIGHT:
+                speechWeight -= (1.0/25.0)*SPEECH_WEIGHT
 
+        # majority voting
+        weights = [videoWeight, toneWeight, speechWeight]
+        emotion, weightedAvgProbs = majorityVotedEmotion(combinedVideoProbs, toneProbs, speechProbs, weights)
 
+        
         print("Probabilities at -> " + str(counter) + " seconds")      
         print("Video Probs : UPDATE : " + str(videoProbUpdate))
         if(videoProbUpdate):
@@ -160,10 +228,9 @@ def main():
         if(speechProbUpdate):
             print("Transcript : " + str(speechAttrs[0]))
             print("Emotion Label : "+ str(speechAttrs[1]))
-            print("Speech probs : " + str(speechProbs))
+        print("Speech probs : " + str(speechProbs))
         
-        weights = [videoWeight, toneWeight, speechWeight]
-        emotion, weightedAvgProbs = majorityVotedEmotion(combinedVideoProbs, toneProbs, speechProbs, weights)
+        
         print("Majority Voted Emotion : " + str(emotion))
         print("Weights : ", end = "") 
         print(weights)
@@ -171,28 +238,43 @@ def main():
         print(weightedAvgProbs)
         print("\n")
         
-        # covering for the hack written in speech weight update
-        # correct display on console, fake display on web interface
-        weights[2] *= 5
+        # comparison data
+        '''
+        print("**********************************")
+        print("VIDEO_EMOTION : " + str(np.argmax(combinedVideoProbs)))
+        print("TONE_EMOTION : " + str(np.argmax(toneProbs)))
+        print("SPEECH_EMOTION : " + str(np.argmax(speechProbs)))
+        print("MAJORITY_EMOTION : " + str(np.argmax(weightedAvgProbs)))
+        print("**********************************")
+        '''
 
-        transmitArray = [weightedAvgProbs, weights, videoProbs, toneProbs, speechProbs,  videoAttrs, toneAttrs, speechAttrs] 
-        arrayGood = True
-        for x in transmitArray:
-            if x is None:
-                arrayGood = False
-        if arrayGood:
-            with open(os.path.join(PICKLES,'pickleFile'), 'wb') as fp:
-                pickle.dump(transmitArray, fp)
+        weightedAvgProbs = checkArray(weightedAvgProbs, 3)
+        videoProbs = checkArray(videoProbs, 6)
+        toneProbs = checkArray(toneProbs, 4)
+        speechProbs = checkArray(speechProbs, 4)
+        videoAttrs = checkArray(videoAttrs, 2)
+        toneAttrs = checkArray(toneAttrs, 2)
+        speechAttrs = checkArray(speechAttrs, 3)
 
+        transmitArray = [weightedAvgProbs, weights, videoProbs, 
+        toneProbs, speechProbs,  videoAttrs, toneAttrs, speechAttrs]
+ 
+
+        # print("################################")
+        # print("Transmit ARRAY : ")
+        # print("################################")
+
+        # print(transmitArray)
+        with open(os.path.join(PICKLES,'pickleFile'), 'wb') as fp:
+            pickle.dump(transmitArray, fp)
 
         # the video module processes more than 1 frame per second, 
         # so, for this delay, we get an update in videoProbs for each second
         # remove this time.sleep(1) call to see 'no update' in video module
 
-        # time.sleep(0) should be zero for final code
         time.sleep(1)
         counter += 1
-
-
+    
+        
 if __name__=="__main__":
     main()
