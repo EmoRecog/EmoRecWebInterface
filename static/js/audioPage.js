@@ -1,4 +1,4 @@
-var linePlot, spiderPlot, utterancePlot;
+var linePlot, spiderPlot;
 var time = 0;
 /**
  * Request data from the server, add it to the graph and set a timeout
@@ -165,40 +165,4 @@ $(document).ready(function() {
     
     });
     
-    utterancePlot = new Highcharts.Chart({
-        chart: {
-            renderTo: 'utterancePlot',
-            defaultSeriesType: 'spline',
-            zoomType: 'xy',
-            panning: true,
-            events: {
-                load: requestData
-            }
-        },
-        
-        title: {
-            text: 'Utterances'
-        },
-        xAxis: {
-          //  tickPixelInterval: 150,
-          //  maxZoom: 20 * 1000
-          minPadding: 0.2,
-            maxPadding: 0.2,
-            title: {
-                text: 'XXXXXXXXXXXXXXXXXXXXXXXXXXX',
-            }
-        },
-        yAxis: {
-            minPadding: 0.2,
-            maxPadding: 0.2,
-            min : 0,
-            max : 100,
-            title: {
-                text: 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY',
-            }
-        },
-           // format:
-            //[a, d, h, n, sad, sur, frame]
-        series: [ { name: '%%%%%',data: [], color:'cyan'  } ]
-    });
 });

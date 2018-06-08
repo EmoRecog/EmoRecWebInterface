@@ -57,7 +57,7 @@ def getUtterance(stream, RATE, CHUNK, THRESHOLD, CHECK_SILENCE_SECONDS, RECORD_S
         for _ in range(int(RATE*CHECK_SILENCE_SECONDS/CHUNK)):
             streamData = stream.read(CHUNK)
             # # for web interface
-            soundPlot(streamData)
+            # soundPlot(streamData)
             checkData += streamData
         
         if(isSilent(checkData, THRESHOLD)):
@@ -223,7 +223,7 @@ def readWavFile(utteranceToneQ,utteranceSpeechQ, audioInputFile):
             # generate a 5 sec clip 
             for _ in range(int(RATE*UTTERANCE_SECONDS/CHUNK)):
                 samples = testWav.readframes(CHUNK) # should throw error
-                soundPlot(samples)
+                # soundPlot(samples)
                 if(len(samples)==0):
                     raise Exception("WAV FILE DONE")
                 utterance += samples
