@@ -39,7 +39,7 @@ def localVideoRecorder(frameQ, videoInputSource):
 
         cv2.putText(frame, "frame : "+str(frameCounter), (30,30), cv2.FONT_HERSHEY_PLAIN, 1.5, 255)
 
-        time.sleep(1/float(50))
+        time.sleep(1/float(56))
 
         # display frame
         cv2.imshow("feed", frame)

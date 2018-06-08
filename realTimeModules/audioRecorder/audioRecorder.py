@@ -10,7 +10,7 @@ from .alsa_error import noalsaerr
 from .channel_index import get_ip_device_index
 
 import pickle
-import pylab
+import matplotlib.pyplot as plt
 
 def soundPlot(data):
     ROOT_AUDIORECORDERMODULE = os.path.dirname(os.path.realpath(__file__))
@@ -21,12 +21,11 @@ def soundPlot(data):
 
     # print("SOUND PLOT -> data : {}".format(data))
     data = np.fromstring(data, dtype=np.int16)
-    pylab.plot(data)
-    # pylab.title(i)
-    pylab.grid()
-    pylab.axis([0,len(data),-2**16/2, 2**16/2])
-    pylab.savefig(WEBINTERFACE_AUD_PLOT, dpi=50)
-    pylab.close("all")
+    plt.plot(data)
+    plt.grid()
+    plt.axis([0,len(data),-2**16/2, 2**16/2])
+    plt.savefig(WEBINTERFACE_AUD_PLOT, dpi=50)
+    plt.close()
 
 def getThreshold(stream, RATE, CHUNK, BASELINE_SECONDS):
     maxChunks = []
@@ -247,7 +246,7 @@ def readWavFile(utteranceToneQ,utteranceSpeechQ, audioInputFile):
             utteranceCount += 1
             
             # make processing sync with real time, deliberate delay of 5 seconds
-            time.sleep(5.2)
+            time.sleep(5)
 
         # except Queue.Full:
         #     print("QUEUE ERROR")
