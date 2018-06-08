@@ -27,6 +27,20 @@ def majorityVotedEmotion(videoProbs, toneProbs, speechProbs, weights = None):
 
     return majorityVote, weightedAvgProbs
 
+def checkArray(array, numberOfElements):
+    if array is None:
+        array = [0] * numberOfElements
+
+    # if (array is not None):
+    #     flag = 0
+    #     for x in array:
+    #         if x != 0:
+    #             flag = 1
+    #             break 
+    
+    return array
+
+
 def main():    
     emotions = ['neu','sad_fea', 'ang_fru','hap_exc_sur']
     
@@ -128,9 +142,9 @@ def main():
     videoRecorderProcess.start()
 
     #default values, each will return two values : [Frame/utterence/transcription , emotionLabel]
-    videoAttrs = 0
-    toneAttrs = 0
-    speechAttrs = 0
+    videoAttrs = None
+    toneAttrs = None
+    speechAttrs = None 
 
     counter = 0
     # use a scheduler here if you want the function call at specified time
@@ -234,28 +248,30 @@ def main():
         print("**********************************")
         '''
 
-        # covering for the hack written in speech weight update
-        # correct display on console, fake display on web interface
-        # weights[2] *= 5
+        weightedAvgProbs = checkArray(weightedAvgProbs, 3)
+        videoProbs = checkArray(videoProbs, 6)
+        toneProbs = checkArray(toneProbs, 4)
+        speechProbs = checkArray(speechProbs, 4)
+        videoAttrs = checkArray(videoAttrs, 2)
+        toneAttrs = checkArray(toneAttrs, 2)
+        speechAttrs = checkArray(speechAttrs, 3)
 
         transmitArray = [weightedAvgProbs, weights, videoProbs, 
         toneProbs, speechProbs,  videoAttrs, toneAttrs, speechAttrs]
-        
-        arrayGood = True
-        for x in transmitArray:
-            if x is None:
-                arrayGood = False
+ 
 
-        if arrayGood:
-            with open(os.path.join(PICKLES,'pickleFile'), 'wb') as fp:
-                pickle.dump(transmitArray, fp)
+        # print("################################")
+        # print("Transmit ARRAY : ")
+        # print("################################")
 
+        # print(transmitArray)
+        with open(os.path.join(PICKLES,'pickleFile'), 'wb') as fp:
+            pickle.dump(transmitArray, fp)
 
         # the video module processes more than 1 frame per second, 
         # so, for this delay, we get an update in videoProbs for each second
         # remove this time.sleep(1) call to see 'no update' in video module
 
-        # time.sleep(0) should be zero for final code
         time.sleep(1)
         counter += 1
     
